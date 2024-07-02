@@ -32,7 +32,7 @@ const LoginFormPage = () => {
     const loginForm = document.getElementById('loginForm');
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
-  
+
     if (submitButton && loginForm && usernameInput && passwordInput) {
       const handleMouseOver = () => {
         if (usernameInput.value === '' || passwordInput.value === '') {
@@ -41,16 +41,16 @@ const LoginFormPage = () => {
           submitButton.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
         }
       };
-  
+
       const handleInput = () => {
         if (usernameInput.value !== '' && passwordInput.value !== '') {
           submitButton.style.transform = 'translate(0, 0)';
         }
       };
-  
+
       submitButton.addEventListener('mouseover', handleMouseOver);
       loginForm.addEventListener('input', handleInput);
-  
+
       return () => {
         submitButton.removeEventListener('mouseover', handleMouseOver);
         loginForm.removeEventListener('input', handleInput);
@@ -61,7 +61,7 @@ const LoginFormPage = () => {
   const handleLogin = async () => {
     const email = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-  
+
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast.success('Login successful!');
@@ -73,7 +73,12 @@ const LoginFormPage = () => {
 
   const handleResetPassword = async () => {
     const email = document.getElementById('username').value;
-  
+
+    if (email === '') {
+      toast.error('Please enter your email before clicking on forget password.');
+      return;
+    }
+
     try {
       await sendPasswordResetEmail(auth, email);
       toast.success('Password reset email sent. Please check your inbox.', {
@@ -135,7 +140,7 @@ const LoginFormPage = () => {
               <label htmlFor="password" className="active">Password</label>
               <span className="eye-icon" onClick={handleTogglePassword}>{showPassword ? "👁️" : "👁️‍🗨️"}</span>
             </div>
-            <a id="submit-btn" onClick={handleLogin}>
+            <a   id="submit-btn" onClick={handleLogin}>
               <span></span>
               <span></span>
               <span></span>
@@ -143,7 +148,6 @@ const LoginFormPage = () => {
               Submit
             </a>
             <p className="forgot-password" onClick={handleResetPassword} style={{ color: '#fff', cursor: 'pointer' }}>Forgot your password?</p>
-
           </form>
         </div>
       </div>
