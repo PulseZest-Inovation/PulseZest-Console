@@ -7,6 +7,8 @@ import {CircularProgress,Box,Typography,Button,Avatar,List,ListItem,ListItemIcon
 import {AccountCircle,Work,Article,AccountBalance,EventAvailable, Logout,} from '@mui/icons-material';
 import companyLogo from '../../../assets/2.png';
 import {Container,Header,TitleContainer,CompanyLogo,Main,Sidebar,Content,Section,SectionTitle,EmployeeDetails,PersonalInfo,DataItem,ViewButton,MarkButton,} from './styles';
+import { IconButton } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 const EmployeeDashboard = () => {
   const navigate = useNavigate();
@@ -16,7 +18,8 @@ const EmployeeDashboard = () => {
   const [attendanceMarked, setAttendanceMarked] = useState(false);
   const [lastMarkedTime, setLastMarkedTime] = useState(null);
   const [currentSection, setCurrentSection] = useState('profile');
-
+  const [showAccountNumber, setShowAccountNumber] = useState(false);
+  const [showIfscCode, setShowIfscCode] = useState(false);
   const theme = useTheme();
   const isMobileView = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -155,6 +158,14 @@ const EmployeeDashboard = () => {
     window.open(fileUrl);
   };
 
+  const handleToggleAccountNumber = () => {
+    setShowAccountNumber(!showAccountNumber);
+  };
+  
+  const handleToggleIfscCode = () => {
+    setShowIfscCode(!showIfscCode);
+  };
+
   const ContentSection = () => {
     switch (currentSection) {
       case 'profile':
@@ -291,28 +302,34 @@ const EmployeeDashboard = () => {
       case 'bank':
         return (
           <Section>
-            <SectionTitle>Bank Details</SectionTitle>
-            <DataItem>
-              <Typography variant="body1">
-                <strong>Bank Name:</strong> {userData.bankName}
-              </Typography>
-            </DataItem>
-            <DataItem>
-              <Typography variant="body1">
-                <strong>Account Holder Name:</strong> {userData.accountHolderName}
-              </Typography>
-            </DataItem>
-            <DataItem>
-              <Typography variant="body1">
-                <strong>Account Number:</strong> {userData.bankAccountNumber}
-              </Typography>
-            </DataItem>
-            <DataItem>
-              <Typography variant="body1">
-                <strong>IFSC Code:</strong> {userData.ifscCode}
-              </Typography>
-            </DataItem>
-          </Section>
+          <SectionTitle>Bank Details</SectionTitle>
+          <DataItem>
+            <Typography variant="body1">
+              <strong>Bank Name:</strong> {userData.bankName}
+            </Typography>
+          </DataItem>
+          <DataItem>
+            <Typography variant="body1">
+              <strong>Account Holder Name:</strong> {userData.accountHolderName}
+            </Typography>
+          </DataItem>
+          <DataItem>
+            <Typography variant="body1">
+              <strong>Account Number:</strong> {showAccountNumber ? userData.bankAccountNumber : '************'}
+            </Typography>
+            <IconButton onClick={handleToggleAccountNumber}>
+              {showAccountNumber ? <VisibilityOff /> : <Visibility />}
+            </IconButton>
+          </DataItem>
+          <DataItem>
+            <Typography variant="body1">
+              <strong>IFSC Code:</strong> {showIfscCode ? userData.ifscCode : '********'}
+            </Typography>
+            <IconButton onClick={handleToggleIfscCode}>
+              {showIfscCode ? <VisibilityOff /> : <Visibility />}
+            </IconButton>
+          </DataItem>
+        </Section>
         );
       case 'attendance':
         return (
