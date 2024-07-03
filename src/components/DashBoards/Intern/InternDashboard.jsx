@@ -1,4 +1,3 @@
-// InternDashboard.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
@@ -58,7 +57,7 @@ const InternDashboard = () => {
 
   if (!userData) {
     return (
-      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px', backgroundColor: '#fff', boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)', borderRadius: '8px' }}>
+      <div style={{ maxWidth: '800px', margin: '20px auto', padding: '20px', backgroundColor: '#fff', boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)', borderRadius: '8px' }}>
         <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>Welcome to Intern Dashboard!</h1>
           <button
@@ -77,10 +76,26 @@ const InternDashboard = () => {
             Logout
           </button>
         </header>
-        <main style={{ padding: '20px', backgroundColor: '#f9f9f9', border: '1px solid #ddd', borderRadius: '4px' }}>
-          <div style={{ marginBottom: '20px' }}>
-            <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>User Data:</h2>
-            <p>No user data found for Intern.</p>
+        <main style={{ padding: '20px', backgroundColor: '#f9f9f9', border: '1px solid #ddd', borderRadius: '4px', maxHeight: '60vh', overflowY: 'auto' }}>
+          <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center' }}>
+            <div style={{ width: '100px', height: '100px', borderRadius: '50%', overflow: 'hidden', marginRight: '20px' }}>
+              <img src={userData?.photoUrl || 'https://via.placeholder.com/100'} alt="User" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+            <div>
+              <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>User Profile</h2>
+              <p style={{ margin: '5px 0' }}><strong>Name:</strong> {userData?.name || 'Not Available'}</p>
+              <p style={{ margin: '5px 0' }}><strong>Email:</strong> {userData?.email || 'Not Available'}</p>
+              {/* Add more fields as per your data structure */}
+            </div>
+          </div>
+
+          {/* Additional user data display */}
+          <div style={{ backgroundColor: '#fff', boxShadow: '0 0 5px rgba(0, 0, 0, 0.1)', padding: '20px', borderRadius: '4px' }}>
+            {Object.keys(userData || {}).map((key) => (
+              <div key={key} style={{ marginBottom: '10px' }}>
+                <strong>{key.charAt(0).toUpperCase() + key.slice(1)}:</strong> {userData[key]}
+              </div>
+            ))}
           </div>
         </main>
       </div>
@@ -89,7 +104,7 @@ const InternDashboard = () => {
 
   // Display userData once loaded
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px', backgroundColor: '#fff', boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)', borderRadius: '8px' }}>
+    <div style={{ maxWidth: '800px', margin: '20px auto', padding: '20px', backgroundColor: '#fff', boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)', borderRadius: '8px' }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>Welcome to Intern Dashboard!</h1>
         <button
@@ -108,17 +123,45 @@ const InternDashboard = () => {
           Logout
         </button>
       </header>
-      <main style={{ padding: '20px', backgroundColor: '#f9f9f9', border: '1px solid #ddd', borderRadius: '4px' }}>
-        <div style={{ marginBottom: '20px' }}>
-          <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>User Data: <span style={{ fontWeight: 'normal' }}>{userData.userId}</span></h2>
-
-          <div style={{ backgroundColor: '#fff', boxShadow: '0 0 5px rgba(0, 0, 0, 0.1)', padding: '20px', borderRadius: '4px' }}>
-            {Object.keys(userData).map((key) => (
-              <div key={key} style={{ marginBottom: '15px' }}>
-                <strong>{key.charAt(0).toUpperCase() + key.slice(1)}:</strong> {userData[key]}
-              </div>
-            ))}
+      <main style={{ padding: '20px', backgroundColor: '#f9f9f9', border: '1px solid #ddd', borderRadius: '4px', maxHeight: '60vh', overflowY: 'auto' }}>
+        <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center' }}>
+          <div style={{ width: '100px', height: '100px', borderRadius: '50%', overflow: 'hidden', marginRight: '20px' }}>
+            <img src={userData.photoUrl} alt="User" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
+          <div>
+            <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>User Profile</h2>
+            <p style={{ margin: '5px 0' }}><strong>Name:</strong> {userData.fullName}</p>
+            <p style={{ margin: '5px 0' }}><strong>Email:</strong> {userData.email}</p>
+            {/* Add more fields as per your data structure */}
+            {userData.resumeLink && (
+              <div style={{ marginTop: '10px' }}>
+                <button
+                  style={{
+                    backgroundColor: '#4caf50',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '10px 20px',
+                    fontSize: '16px',
+                    cursor: 'pointer',
+                    borderRadius: '4px',
+                    transition: 'background-color 0.3s ease',
+                  }}
+                  onClick={() => window.open(userData.resumeLink, '_blank')}
+                >
+                  View Resume
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Additional user data display */}
+        <div style={{ backgroundColor: '#fff', boxShadow: '0 0 5px rgba(0, 0, 0, 0.1)', padding: '20px', borderRadius: '4px' }}>
+          {Object.keys(userData).map((key) => (
+            <div key={key} style={{ marginBottom: '10px' }}>
+              <strong>{key.charAt(0).toUpperCase() + key.slice(1)}:</strong> {userData[key]}
+            </div>
+          ))}
         </div>
       </main>
     </div>
@@ -126,4 +169,3 @@ const InternDashboard = () => {
 };
 
 export default InternDashboard;
-
