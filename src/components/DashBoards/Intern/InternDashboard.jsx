@@ -83,9 +83,31 @@ const InternDashboard = () => {
             </div>
             <div>
               <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>User Profile</h2>
-              <p style={{ margin: '5px 0' }}><strong>Name:</strong> {userData?.name || 'Not Available'}</p>
+              <p style={{ margin: '5px 0' }}><strong>Name:</strong> {userData?.fullName || 'Not Available'}</p>
               <p style={{ margin: '5px 0' }}><strong>Email:</strong> {userData?.email || 'Not Available'}</p>
+              <p style={{ margin: '5px 0' }}><strong>Date of Registration:</strong> {userData?.dateOfRegistration || 'Not Available'}</p>
+              <p style={{ margin: '5px 0' }}><strong>Phone Number:</strong> {userData?.phoneNumber || 'Not Available'}</p>
+              <p style={{ margin: '5px 0' }}><strong>Qualification:</strong> {userData?.qualification || 'Not Available'}</p>
               {/* Add more fields as per your data structure */}
+              {userData?.resumeURL && (
+                <div style={{ marginTop: '10px' }}>
+                  <button
+                    style={{
+                      backgroundColor: '#4caf50',
+                      color: '#fff',
+                      border: 'none',
+                      padding: '10px 20px',
+                      fontSize: '16px',
+                      cursor: 'pointer',
+                      borderRadius: '4px',
+                      transition: 'background-color 0.3s ease',
+                    }}
+                    onClick={() => window.open(userData.resumeURL, '_blank')}
+                  >
+                    View Resume
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -126,42 +148,69 @@ const InternDashboard = () => {
       <main style={{ padding: '20px', backgroundColor: '#f9f9f9', border: '1px solid #ddd', borderRadius: '4px', maxHeight: '60vh', overflowY: 'auto' }}>
         <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center' }}>
           <div style={{ width: '100px', height: '100px', borderRadius: '50%', overflow: 'hidden', marginRight: '20px' }}>
-            <img src={userData.photoUrl || 'https://via.placeholder.com/100'} alt="User" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src={userData.passportPhotoUrl || 'https://via.placeholder.com/100'} alt="User" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
           <div>
             <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>User Profile</h2>
             <p style={{ margin: '5px 0' }}><strong>Name:</strong> {userData.fullName}</p>
             <p style={{ margin: '5px 0' }}><strong>Email:</strong> {userData.email}</p>
-            {/* Add more fields as per your data structure */}
-            {userData.resumeLink && (
-              <div style={{ marginTop: '10px' }}>
-                <button
-                  style={{
-                    backgroundColor: '#4caf50',
-                    color: '#fff',
-                    border: 'none',
-                    padding: '10px 20px',
-                    fontSize: '16px',
-                    cursor: 'pointer',
-                    borderRadius: '4px',
-                    transition: 'background-color 0.3s ease',
-                  }}
-                  onClick={() => window.open(userData.resumeLink, '_blank')}
-                >
-                  View Resume
-                </button>
-              </div>
-            )}
+            <p style={{ margin: '5px 0' }}><strong>Date of Registration:</strong> {userData.dateOfRegistration}</p>
+            <p style={{ margin: '5px 0' }}><strong>Phone Number:</strong> {userData.phoneNumber}</p>
+            <p style={{ margin: '5px 0' }}><strong>Qualification:</strong> {userData.qualification}</p>
+          
+              
+           
           </div>
         </div>
 
-        {/* Additional user data display */}
-        <div style={{ backgroundColor: '#fff', boxShadow: '0 0 5px rgba(0, 0, 0, 0.1)', padding: '20px', borderRadius: '4px' }}>
-          {Object.keys(userData).map((key) => (
-            <div key={key} style={{ marginBottom: '10px' }}>
-              <strong>{key.charAt(0).toUpperCase() + key.slice(1)}:</strong> {userData[key]}
+        <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>Department</h2>
+        <p style={{ margin: '5px 0' }}><strong>Internship Months:</strong> {userData.internshipMonths}</p>
+        <p style={{ margin: '5px 0' }}><strong>Usertype:</strong> {userData.userType}</p>
+
+        <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>Documents</h2>
+        <div style={{ margin: '5px 0' }}>
+          <strong>Passport Photo:</strong>
+          {userData.passportPhotoUrl && (
+            <div style={{ marginTop: '10px' }}>
+              <button
+                style={{
+                  backgroundColor: '#4caf50',
+                  color: '#fff',
+                  border: 'none',
+                  padding: '10px 20px',
+                  fontSize: '16px',
+                  cursor: 'pointer',
+                  borderRadius: '4px',
+                  transition: 'background-color 0.3s ease',
+                }}
+                onClick={() => window.open(userData.passportPhotoUrl, '_blank')}
+              >
+                View Passport Photo
+              </button>
             </div>
-          ))}
+          )}
+        </div>
+        <div style={{ margin: '5px 0' }}>
+          <strong>Resume:</strong>
+          {userData.resumeURL && (
+            <div style={{ marginTop: '10px' }}>
+              <button
+                style={{
+                  backgroundColor: '#4caf50',
+                  color: '#fff',
+                  border: 'none',
+                  padding: '10px 20px',
+                  fontSize: '16px',
+                  cursor: 'pointer',
+                  borderRadius: '4px',
+                  transition: 'background-color 0.3s ease',
+                }}
+                onClick={() => window.open(userData.resumeURL, '_blank')}
+              >
+                View Resume
+              </button>
+            </div>
+          )}
         </div>
       </main>
     </div>
