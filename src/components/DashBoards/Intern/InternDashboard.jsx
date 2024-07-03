@@ -79,7 +79,7 @@ const InternDashboard = () => {
         <main style={{ padding: '20px', backgroundColor: '#f9f9f9', border: '1px solid #ddd', borderRadius: '4px', maxHeight: '60vh', overflowY: 'auto' }}>
           <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center' }}>
             <div style={{ width: '100px', height: '100px', borderRadius: '50%', overflow: 'hidden', marginRight: '20px' }}>
-              <img src={userData?.photoUrl || 'https://via.placeholder.com/100'} alt="User" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src={userData?.passportPhotoUrl || 'https://via.placeholder.com/100'} alt="User" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
             <div>
               <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>User Profile</h2>
@@ -126,7 +126,7 @@ const InternDashboard = () => {
       <main style={{ padding: '20px', backgroundColor: '#f9f9f9', border: '1px solid #ddd', borderRadius: '4px', maxHeight: '60vh', overflowY: 'auto' }}>
         <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center' }}>
           <div style={{ width: '100px', height: '100px', borderRadius: '50%', overflow: 'hidden', marginRight: '20px' }}>
-            <img src={userData.photoUrl} alt="User" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src={userData.photoUrl || 'https://via.placeholder.com/100'} alt="User" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
           <div>
             <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>User Profile</h2>
