@@ -371,29 +371,37 @@ const EmployeeDashboard = () => {
       case 'attendance':
         return (
           <Section>
-            <SectionTitle>Attendance</SectionTitle>
-            <Typography variant="body1">
-              <strong>Today's Attendance:</strong>{' '}
-              {attendanceData.attendance || 'Not marked yet'}
+          <SectionTitle>Attendance</SectionTitle>
+          {attendanceData.attendance === 'leave' ? (
+            <Typography variant="body1" color="textSecondary" >
+              You are on leave today 😄.
             </Typography>
-            {attendanceMarked && (
+          ) : (
+            <>
               <Typography variant="body1">
-                <strong>Last Marked Time:</strong>{' '}
-                {lastMarkedTime
-                  ? `${lastMarkedTime.toLocaleDateString()} ${lastMarkedTime.toLocaleTimeString()}`
-                  : 'Not available'}
+                <strong>Today's Attendance:</strong>{' '}
+                {attendanceData.attendance || 'Not marked yet'}
               </Typography>
-            )}
-            {!attendanceMarked && (
-              <MarkButton
-                variant="contained"
-                color="primary"
-                onClick={() => markAttendance('present')}
-              >
-                Mark Present
-              </MarkButton>
-            )}
-          </Section>
+              {attendanceMarked && (
+                <Typography variant="body1">
+                  <strong>Last Marked Time:</strong>{' '}
+                  {lastMarkedTime
+                    ? `${lastMarkedTime.toLocaleDateString()} ${lastMarkedTime.toLocaleTimeString()}`
+                    : 'Not available'}
+                </Typography>
+              )}
+              {!attendanceMarked && (
+                <MarkButton
+                  variant="contained"
+                  color="primary"
+                  onClick={() => markAttendance('present')}
+                >
+                  Mark Present
+                </MarkButton>
+              )}
+            </>
+          )}
+        </Section>
         );
       default:
         return null;
