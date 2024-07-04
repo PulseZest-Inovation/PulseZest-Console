@@ -207,43 +207,41 @@ const EmployeeDashboard = () => {
     switch (currentSection) {
       case 'profile':
         return (
-          <Section>
-          <SectionTitle>Profile Section</SectionTitle>
-          <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
-            <Avatar src={userData.passportPhotoUrl} sx={{ width: 100, height: 100, marginRight: '20px' }} />
-           
-          </Box>
-          <TableContainer>
-            <Table>
-              <TableBody>
-                <TableRow>
-                  <TableCell><strong>Name:</strong></TableCell>
-                  <TableCell>{userData.fullName}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell><strong>Email:</strong></TableCell>
-                  <TableCell>{userData.email}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell><strong>Address:</strong></TableCell>
-                  <TableCell>{userData.address}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell><strong>Phone:</strong></TableCell>
-                  <TableCell>{userData.phoneNumber}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell><strong>Alternative Phone No:</strong></TableCell>
-                  <TableCell>{userData.alternativePhoneNumber}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell><strong>Microsoft Teams Id:</strong></TableCell>
-                  <TableCell>{userData.teamsId}</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Section>
+          <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 260px)', paddingRight: '15px', paddingBottom: '80px' }}>
+            <div style={{ marginBottom: '30px' }}>
+              <Avatar src={userData.passportPhotoUrl} style={{ width: '100px', height: '100px', marginRight: '20px' }} />
+            </div>
+            <TableContainer style={{ maxHeight: 'calc(100vh - 280px)', overflowY: 'auto' }}>
+              <Table>
+                <TableBody>
+                  <TableRow>
+                    <TableCell><strong>Name:</strong></TableCell>
+                    <TableCell>{userData.fullName}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell><strong>Email:</strong></TableCell>
+                    <TableCell>{userData.email}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell><strong>Address:</strong></TableCell>
+                    <TableCell>{userData.address}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell><strong>Phone:</strong></TableCell>
+                    <TableCell>{userData.phoneNumber}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell><strong>Alternative Phone No:</strong></TableCell>
+                    <TableCell>{userData.alternativePhoneNumber}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell><strong>Microsoft Teams Id:</strong></TableCell>
+                    <TableCell>{userData.teamsId}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </div>
         );
       case 'workingDepartment':
         return (
@@ -410,9 +408,16 @@ const EmployeeDashboard = () => {
 
   if (loading) {
     return (
-      <Container>
-        <CircularProgress />
-      </Container>
+      <Container
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100vh',  // Ensures it covers the entire viewport height
+    }}
+  >
+    <CircularProgress />
+  </Container>
     );
   }
 
@@ -508,50 +513,54 @@ const EmployeeDashboard = () => {
         </Content>
       </Main>
       {isMobileView && (
-        <BottomNavigation
-          value={currentSection}
-          onChange={(event, newValue) => handleSectionChange(newValue)}
-          showLabels={false} // Hide the labels of the icons
-          sx={{
-            position: 'fixed',
-            bottom: 0,
-            width: '100%',
-            backgroundColor: theme.palette.background.paper,
-            boxShadow: '0 -3px 5px rgba(0,0,0,0.1)',
-            zIndex: 1000,
-          }}
-        >
-          <BottomNavigationAction
-            label="Attendance"
-            value="attendance"
-            icon={<EventAvailable />}
-            sx={{ minWidth: 'auto' }}
-          />
-          <BottomNavigationAction
-            label="Department"
-            value="workingDepartment"
-            icon={<Work />}
-            sx={{ minWidth: 'auto' }}
-          />
-          <BottomNavigationAction
-            label="Documents"
-            value="documents"
-            icon={<Article />}
-            sx={{ minWidth: 'auto' }}
-          />
-          <BottomNavigationAction
-            label="Bank"
-            value="bank"
-            icon={<AccountBalance />}
-            sx={{ minWidth: 'auto' }}
-          />
-          <BottomNavigationAction
-            label="Profile"
-            value="profile"
-            icon={<AccountCircle />}
-            sx={{ minWidth: 'auto' }}
-          />
-        </BottomNavigation>
+       <BottomNavigation
+       value={currentSection}
+       onChange={(event, newValue) => handleSectionChange(newValue)}
+       showLabels={false}
+       sx={{
+         position: 'fixed',
+         bottom: 0,
+         left: 0,
+         width: '100%',
+         backgroundColor: theme.palette.background.paper,
+         boxShadow: '0 -3px 5px rgba(0,0,0,0.1)',
+         zIndex: 1000,
+         display: 'flex',
+         justifyContent: 'flex-start' // Align items to the left
+       }}
+     >
+       <BottomNavigationAction
+         label="Attendance"
+         value="attendance"
+         icon={<EventAvailable />}
+         sx={{ minWidth: 'auto', flex: 1 }}
+       />
+       <BottomNavigationAction
+         label="Profile"
+         value="profile"
+         icon={<AccountCircle />}
+         sx={{ minWidth: 'auto', flex: 1 }}
+       />
+       <BottomNavigationAction
+         label="Department"
+         value="workingDepartment"
+         icon={<Work />}
+         sx={{ minWidth: 'auto', flex: 1 }}
+       />
+       <BottomNavigationAction
+         label="Documents"
+         value="documents"
+         icon={<Article />}
+         sx={{ minWidth: 'auto', flex: 1 }}
+       />
+       <BottomNavigationAction
+         label="Bank"
+         value="bank"
+         icon={<AccountBalance />}
+         sx={{ minWidth: 'auto', flex: 1 }}
+       />
+     </BottomNavigation>
+     
       )}
     </Container>
   );

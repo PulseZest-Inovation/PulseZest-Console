@@ -231,10 +231,7 @@ a span:nth-child(4) {
     }
 }
 
-.user-box input:focus {
-    border-bottom: 1px solid #03e9f4;
-    box-shadow: 0 0 5px #03e9f4, 0 0 25px #03e9f4, 0 0 50px #03e9f4, 0 0 100px #03e9f4;
-}
+
 
 .glow-container {
     position: absolute;
@@ -246,13 +243,7 @@ a span:nth-child(4) {
     overflow: hidden;
 }
 
-.glow-text {
-    font-size: 36px;
-    font-weight: bold;
-    color: #fff;
-    white-space: nowrap;
-    overflow: hidden;
-}
+
 
 
 
