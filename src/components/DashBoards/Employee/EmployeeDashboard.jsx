@@ -3,11 +3,48 @@ import { useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../../../utils/firebaseConfig';
-import {CircularProgress,Box,Typography,Button,Avatar,List,ListItem,ListItemIcon,ListItemText,Divider,BottomNavigation,BottomNavigationAction,useMediaQuery, useTheme,} from '@mui/material';
-import {AccountCircle,Work,Article,AccountBalance,EventAvailable, Logout,} from '@mui/icons-material';
+import {
+  CircularProgress,
+  Box,
+  Typography,
+  Button,
+  Avatar,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+  BottomNavigation,
+  BottomNavigationAction,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
+import {
+  AccountCircle,
+  Work,
+  Article,
+  AccountBalance,
+  EventAvailable,
+  Logout,
+} from '@mui/icons-material';
 import companyLogo from '../../../assets/2.png';
-import {Container,Header,TitleContainer,CompanyLogo,Main,Sidebar,Content,Section,SectionTitle,EmployeeDetails,PersonalInfo,DataItem,ViewButton,MarkButton,} from './styles';
-import { IconButton } from '@mui/material';
+import {
+  Container,
+  Header,
+  TitleContainer,
+  CompanyLogo,
+  Main,
+  Sidebar,
+  Content,
+  Section,
+  SectionTitle,
+  EmployeeDetails,
+  PersonalInfo,
+  DataItem,
+  ViewButton,
+  MarkButton,
+} from './styles';
+import { IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 const EmployeeDashboard = () => {
@@ -17,7 +54,7 @@ const EmployeeDashboard = () => {
   const [attendanceData, setAttendanceData] = useState({});
   const [attendanceMarked, setAttendanceMarked] = useState(false);
   const [lastMarkedTime, setLastMarkedTime] = useState(null);
-  const [currentSection, setCurrentSection] = useState('profile');
+  const [currentSection, setCurrentSection] = useState('attendance');
   const [showAccountNumber, setShowAccountNumber] = useState(false);
   const [showIfscCode, setShowIfscCode] = useState(false);
   const theme = useTheme();
@@ -161,7 +198,7 @@ const EmployeeDashboard = () => {
   const handleToggleAccountNumber = () => {
     setShowAccountNumber(!showAccountNumber);
   };
-  
+
   const handleToggleIfscCode = () => {
     setShowIfscCode(!showIfscCode);
   };
@@ -171,42 +208,42 @@ const EmployeeDashboard = () => {
       case 'profile':
         return (
           <Section>
-            <SectionTitle>Profile</SectionTitle>
-            <EmployeeDetails>
-              <Avatar
-                src={userData.passportPhotoUrl}
-                alt="Employee Avatar"
-                sx={{
-                  width: 120,
-                  height: 120,
-                  border: '2px solid #ccc',
-                  borderRadius: '50%',
-                  marginRight: '20px', // Added margin between avatar and details
-                }}
-              />
-              <PersonalInfo>
-                <Typography variant="body1">
-                  <strong>Name:</strong> {userData.fullName}
-                </Typography>
-                <Typography variant="body1">
-                  <strong>Email:</strong> {userData.email}
-                </Typography>
-                <Typography variant="body1">
-                  <strong>Address:</strong> {userData.address}
-                </Typography>
-                <Typography variant="body1">
-                  <strong>Phone:</strong> {userData.phoneNumber}
-                </Typography>
-                <Typography variant="body1">
-                  <strong>Alternative Phone No:</strong>{' '}
-                  {userData.alternativePhoneNumber}
-                </Typography>
-                <Typography variant="body1">
-                  <strong>Microsoft Teams Id:</strong> {userData.teamsId}
-                </Typography>
-              </PersonalInfo>
-            </EmployeeDetails>
-          </Section>
+          <SectionTitle>Profile Section</SectionTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
+            <Avatar src={userData.passportPhotoUrl} sx={{ width: 100, height: 100, marginRight: '20px' }} />
+           
+          </Box>
+          <TableContainer>
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell><strong>Name:</strong></TableCell>
+                  <TableCell>{userData.fullName}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell><strong>Email:</strong></TableCell>
+                  <TableCell>{userData.email}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell><strong>Address:</strong></TableCell>
+                  <TableCell>{userData.address}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell><strong>Phone:</strong></TableCell>
+                  <TableCell>{userData.phoneNumber}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell><strong>Alternative Phone No:</strong></TableCell>
+                  <TableCell>{userData.alternativePhoneNumber}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell><strong>Microsoft Teams Id:</strong></TableCell>
+                  <TableCell>{userData.teamsId}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Section>
         );
       case 'workingDepartment':
         return (
@@ -302,34 +339,34 @@ const EmployeeDashboard = () => {
       case 'bank':
         return (
           <Section>
-          <SectionTitle>Bank Details</SectionTitle>
-          <DataItem>
-            <Typography variant="body1">
-              <strong>Bank Name:</strong> {userData.bankName}
-            </Typography>
-          </DataItem>
-          <DataItem>
-            <Typography variant="body1">
-              <strong>Account Holder Name:</strong> {userData.accountHolderName}
-            </Typography>
-          </DataItem>
-          <DataItem>
-            <Typography variant="body1">
-              <strong>Account Number:</strong> {showAccountNumber ? userData.bankAccountNumber : '************'}
-            </Typography>
-            <IconButton onClick={handleToggleAccountNumber}>
-              {showAccountNumber ? <VisibilityOff /> : <Visibility />}
-            </IconButton>
-          </DataItem>
-          <DataItem>
-            <Typography variant="body1">
-              <strong>IFSC Code:</strong> {showIfscCode ? userData.ifscCode : '********'}
-            </Typography>
-            <IconButton onClick={handleToggleIfscCode}>
-              {showIfscCode ? <VisibilityOff /> : <Visibility />}
-            </IconButton>
-          </DataItem>
-        </Section>
+            <SectionTitle>Bank Details</SectionTitle>
+            <DataItem>
+              <Typography variant="body1">
+                <strong>Bank Name:</strong> {userData.bankName}
+              </Typography>
+            </DataItem>
+            <DataItem>
+              <Typography variant="body1">
+                <strong>Account Holder Name:</strong> {userData.accountHolderName}
+              </Typography>
+            </DataItem>
+            <DataItem>
+              <Typography variant="body1">
+                <strong>Account Number:</strong> {showAccountNumber ? userData.bankAccountNumber : '************'}
+              </Typography>
+              <IconButton onClick={handleToggleAccountNumber}>
+                {showAccountNumber ? <VisibilityOff /> : <Visibility />}
+              </IconButton>
+            </DataItem>
+            <DataItem>
+              <Typography variant="body1">
+                <strong>IFSC Code:</strong> {showIfscCode ? userData.ifscCode : '********'}
+              </Typography>
+              <IconButton onClick={handleToggleIfscCode}>
+                {showIfscCode ? <VisibilityOff /> : <Visibility />}
+              </IconButton>
+            </DataItem>
+          </Section>
         );
       case 'attendance':
         return (
@@ -477,9 +514,9 @@ const EmployeeDashboard = () => {
           }}
         >
           <BottomNavigationAction
-            label="Profile"
-            value="profile"
-            icon={<AccountCircle />}
+            label="Attendance"
+            value="attendance"
+            icon={<EventAvailable />}
             sx={{ minWidth: 'auto' }}
           />
           <BottomNavigationAction
@@ -501,9 +538,9 @@ const EmployeeDashboard = () => {
             sx={{ minWidth: 'auto' }}
           />
           <BottomNavigationAction
-            label="Attendance"
-            value="attendance"
-            icon={<EventAvailable />}
+            label="Profile"
+            value="profile"
+            icon={<AccountCircle />}
             sx={{ minWidth: 'auto' }}
           />
         </BottomNavigation>

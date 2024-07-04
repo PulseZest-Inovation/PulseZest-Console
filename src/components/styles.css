@@ -52,13 +52,24 @@ body, html {
 
 .login-box {
     max-width: 400px;
-    width: 100%;
-    padding: 40px;
-    background: rgba(0, 0, 0, 0.9);
-    border-radius: 10px;
+    width: 80%; /* Adjusted width for better responsiveness */
+    padding: 40px; /* Default padding for larger screens */
+    background: rgb(0, 0, 0); /* Solid black background */
+    border-radius: 15px; /* Increased border-radius for a more rounded look */
     box-shadow: 0 15px 25px rgba(0, 0, 0, 0.5);
     text-align: center;
+    margin: 0 auto; /* Center align horizontally */
 }
+
+
+@media (max-width: 600px) {
+    .login-box {
+        padding: 20px; /* Reduced padding for smaller screens */
+    }
+}
+
+
+
 
 .login-box h2 {
     margin: 0 0 30px;
