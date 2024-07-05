@@ -38,14 +38,14 @@ import {
   Content,
   Section,
   SectionTitle,
-  EmployeeDetails,
-  PersonalInfo,
+
   DataItem,
   ViewButton,
   MarkButton,
 } from './styles';
 import { IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 
 const EmployeeDashboard = () => {
   const navigate = useNavigate();
@@ -59,6 +59,7 @@ const EmployeeDashboard = () => {
   const [showIfscCode, setShowIfscCode] = useState(false);
   const theme = useTheme();
   const isMobileView = useMediaQuery(theme.breakpoints.down('sm'));
+  const [zodCount, setZodCount] = useState(0);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -75,6 +76,7 @@ const EmployeeDashboard = () => {
             const userData = employeeDetailsDocSnap.data();
             setUserData(userData);
             fetchAttendanceData(userId);
+            fetchZodCount(userId); // Call fetchZodCount here
           } else {
             console.log('No matching document for Employee.');
           }
@@ -90,6 +92,7 @@ const EmployeeDashboard = () => {
 
     fetchUserData();
   }, [navigate]);
+
 
   useEffect(() => {
     const now = new Date();
@@ -203,6 +206,27 @@ const EmployeeDashboard = () => {
     setShowIfscCode(!showIfscCode);
   };
 
+  // Function to fetch zodCount for a specific user
+  const fetchZodCount = async (userId) => {
+    try {
+      const docRef = doc(db, 'employeeDetails', userId, 'manage', userId);
+      const docSnapshot = await getDoc(docRef);
+
+      if (docSnapshot.exists()) {
+        const userData = docSnapshot.data();
+        const zodCount = userData.zodCount || 0; // Assuming default value is 0 if zodCount doesn't exist
+        setZodCount(zodCount); // Update zodCount state
+        console.log('Zod count for user', userId, 'is', zodCount);
+      } else {
+        console.log('No zod count found for user', userId);
+        setZodCount(0); // Set default value if document doesn't exist
+      }
+    } catch (error) {
+      console.error('Error fetching zodCount:', error);
+      setZodCount(0); // Handle error by setting default value
+    }
+  };
+
   const ContentSection = () => {
     switch (currentSection) {
       case 'profile':
@@ -252,17 +276,36 @@ const EmployeeDashboard = () => {
                 <Button
                   key={index}
                   variant="outlined"
-                  color="primary"
                   onClick={() => handleDepartmentClick(dept)}
-                  sx={{ margin: '5px 0' }}
+                  style={{ marginRight: '10px', marginBottom: '10px', textTransform: 'none' }}
                 >
                   {dept}
                 </Button>
               ))
             ) : (
-              <Typography variant="body1">No department assigned</Typography>
+              <Typography variant="body2" color="textSecondary" style={{ marginTop: '10px' }}>
+                No department information available.
+              </Typography>
             )}
+
+            <Box sx={{ textAlign: 'center', marginTop: '70px', marginBottom: '20px' }}>
+              <Typography variant="h5" sx={{ color: '#FF9800', marginBottom: '10px', fontSize: '24px' }}>
+                <EmojiEventsIcon sx={{ fontSize: '36px', verticalAlign: 'middle', marginRight: '10px' }} />
+                Zest Of The Day Count
+                <EmojiEventsIcon sx={{ fontSize: '36px', verticalAlign: 'middle', marginLeft: '10px' }} />
+              </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                {loading ? (
+                  <CircularProgress size={20} sx={{ color: '#FF9800', marginRight: '10px' }} />
+                ) : (
+                  <Typography variant="body1" sx={{ color: '#4CAF50', fontSize: '20px' }}>
+                    Your current Zod count: {zodCount}
+                  </Typography>
+                )}
+              </Box>
+            </Box>
           </Section>
+
         );
       case 'documents':
         return (
@@ -369,37 +412,37 @@ const EmployeeDashboard = () => {
       case 'attendance':
         return (
           <Section>
-          <SectionTitle>Attendance</SectionTitle>
-          {attendanceData.attendance === 'leave' ? (
-            <Typography variant="body1" color="textSecondary" >
-              You are on leave today 😄.
-            </Typography>
-          ) : (
-            <>
-              <Typography variant="body1">
-                <strong>Today's Attendance:</strong>{' '}
-                {attendanceData.attendance || 'Not marked yet'}
+            <SectionTitle>Attendance</SectionTitle>
+            {attendanceData.attendance === 'leave' ? (
+              <Typography variant="body1" color="textSecondary" >
+                You are on leave today 😄.
               </Typography>
-              {attendanceMarked && (
+            ) : (
+              <>
                 <Typography variant="body1">
-                  <strong>Last Marked Time:</strong>{' '}
-                  {lastMarkedTime
-                    ? `${lastMarkedTime.toLocaleDateString()} ${lastMarkedTime.toLocaleTimeString()}`
-                    : 'Not available'}
+                  <strong>Today's Attendance:</strong>{' '}
+                  {attendanceData.attendance || 'Not marked yet'}
                 </Typography>
-              )}
-              {!attendanceMarked && (
-                <MarkButton
-                  variant="contained"
-                  color="primary"
-                  onClick={() => markAttendance('present')}
-                >
-                  Mark Present
-                </MarkButton>
-              )}
-            </>
-          )}
-        </Section>
+                {attendanceMarked && (
+                  <Typography variant="body1">
+                    <strong>Last Marked Time:</strong>{' '}
+                    {lastMarkedTime
+                      ? `${lastMarkedTime.toLocaleDateString()} ${lastMarkedTime.toLocaleTimeString()}`
+                      : 'Not available'}
+                  </Typography>
+                )}
+                {!attendanceMarked && (
+                  <MarkButton
+                    variant="contained"
+                    color="primary"
+                    onClick={() => markAttendance('present')}
+                  >
+                    Mark Present
+                  </MarkButton>
+                )}
+              </>
+            )}
+          </Section>
         );
       default:
         return null;
@@ -409,15 +452,15 @@ const EmployeeDashboard = () => {
   if (loading) {
     return (
       <Container
-    style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '100vh',  // Ensures it covers the entire viewport height
-    }}
-  >
-    <CircularProgress />
-  </Container>
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',  // Ensures it covers the entire viewport height
+        }}
+      >
+        <CircularProgress />
+      </Container>
     );
   }
 
@@ -513,54 +556,54 @@ const EmployeeDashboard = () => {
         </Content>
       </Main>
       {isMobileView && (
-       <BottomNavigation
-       value={currentSection}
-       onChange={(event, newValue) => handleSectionChange(newValue)}
-       showLabels={false}
-       sx={{
-         position: 'fixed',
-         bottom: 0,
-         left: 0,
-         width: '100%',
-         backgroundColor: theme.palette.background.paper,
-         boxShadow: '0 -3px 5px rgba(0,0,0,0.1)',
-         zIndex: 1000,
-         display: 'flex',
-         justifyContent: 'flex-start' // Align items to the left
-       }}
-     >
-       <BottomNavigationAction
-         label="Attendance"
-         value="attendance"
-         icon={<EventAvailable />}
-         sx={{ minWidth: 'auto', flex: 1 }}
-       />
-       <BottomNavigationAction
-         label="Profile"
-         value="profile"
-         icon={<AccountCircle />}
-         sx={{ minWidth: 'auto', flex: 1 }}
-       />
-       <BottomNavigationAction
-         label="Department"
-         value="workingDepartment"
-         icon={<Work />}
-         sx={{ minWidth: 'auto', flex: 1 }}
-       />
-       <BottomNavigationAction
-         label="Documents"
-         value="documents"
-         icon={<Article />}
-         sx={{ minWidth: 'auto', flex: 1 }}
-       />
-       <BottomNavigationAction
-         label="Bank"
-         value="bank"
-         icon={<AccountBalance />}
-         sx={{ minWidth: 'auto', flex: 1 }}
-       />
-     </BottomNavigation>
-     
+        <BottomNavigation
+          value={currentSection}
+          onChange={(event, newValue) => handleSectionChange(newValue)}
+          showLabels={false}
+          sx={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            width: '100%',
+            backgroundColor: theme.palette.background.paper,
+            boxShadow: '0 -3px 5px rgba(0,0,0,0.1)',
+            zIndex: 1000,
+            display: 'flex',
+            justifyContent: 'flex-start' // Align items to the left
+          }}
+        >
+          <BottomNavigationAction
+            label="Attendance"
+            value="attendance"
+            icon={<EventAvailable />}
+            sx={{ minWidth: 'auto', flex: 1 }}
+          />
+          <BottomNavigationAction
+            label="Profile"
+            value="profile"
+            icon={<AccountCircle />}
+            sx={{ minWidth: 'auto', flex: 1 }}
+          />
+          <BottomNavigationAction
+            label="Department"
+            value="workingDepartment"
+            icon={<Work />}
+            sx={{ minWidth: 'auto', flex: 1 }}
+          />
+          <BottomNavigationAction
+            label="Documents"
+            value="documents"
+            icon={<Article />}
+            sx={{ minWidth: 'auto', flex: 1 }}
+          />
+          <BottomNavigationAction
+            label="Bank"
+            value="bank"
+            icon={<AccountBalance />}
+            sx={{ minWidth: 'auto', flex: 1 }}
+          />
+        </BottomNavigation>
+
       )}
     </Container>
   );
