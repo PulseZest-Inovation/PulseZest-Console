@@ -43,7 +43,7 @@ import {
   ViewButton,
   MarkButton,
 } from './styles';
-import { IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { IconButton, Table, TableBody, TableCell, TableContainer,   TableRow } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 
