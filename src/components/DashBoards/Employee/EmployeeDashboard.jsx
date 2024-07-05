@@ -4,48 +4,23 @@ import { signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../../../utils/firebaseConfig';
 import {
-  CircularProgress,
-  Box,
-  Typography,
-  Button,
-  Avatar,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Divider,
-  BottomNavigation,
-  BottomNavigationAction,
-  useMediaQuery,
-  useTheme,
+  CircularProgress, Box, Typography, Button, Avatar, List, ListItem, ListItemIcon, ListItemText,
+  Divider, BottomNavigation, BottomNavigationAction, useMediaQuery, useTheme,
 } from '@mui/material';
 import {
-  AccountCircle,
-  Work,
-  Article,
-  AccountBalance,
-  EventAvailable,
-  Logout,
+  AccountCircle, Work, Article, AccountBalance, EventAvailable, Logout
 } from '@mui/icons-material';
 import companyLogo from '../../../assets/2.png';
 import {
-  Container,
-  Header,
-  TitleContainer,
-  CompanyLogo,
-  Main,
-  Sidebar,
-  Content,
-  Section,
-  SectionTitle,
-
-  DataItem,
-  ViewButton,
-  MarkButton,
+  Container, Header, TitleContainer, CompanyLogo, Main, Sidebar, Content, Section, SectionTitle,
+  DataItem, ViewButton, MarkButton
 } from './styles';
-import { IconButton, Table, TableBody, TableCell, TableContainer,   TableRow } from '@mui/material';
+import {
+  IconButton, Table, TableBody, TableCell, TableContainer, TableRow
+} from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+
 
 const EmployeeDashboard = () => {
   const navigate = useNavigate();
@@ -92,7 +67,6 @@ const EmployeeDashboard = () => {
 
     fetchUserData();
   }, [navigate]);
-
 
   useEffect(() => {
     const now = new Date();
@@ -226,6 +200,7 @@ const EmployeeDashboard = () => {
       setZodCount(0); // Handle error by setting default value
     }
   };
+
 
   const ContentSection = () => {
     switch (currentSection) {
