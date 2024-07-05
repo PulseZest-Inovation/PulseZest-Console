@@ -19,8 +19,7 @@ import {
   IconButton, Table, TableBody, TableCell, TableContainer, TableRow
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-
+import ZodCountDisplay from "./Features/ZodCountDisplay";
 
 const EmployeeDashboard = () => {
   const navigate = useNavigate();
@@ -34,7 +33,6 @@ const EmployeeDashboard = () => {
   const [showIfscCode, setShowIfscCode] = useState(false);
   const theme = useTheme();
   const isMobileView = useMediaQuery(theme.breakpoints.down('sm'));
-  const [zodCount, setZodCount] = useState(0);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -51,7 +49,6 @@ const EmployeeDashboard = () => {
             const userData = employeeDetailsDocSnap.data();
             setUserData(userData);
             fetchAttendanceData(userId);
-            fetchZodCount(userId); // Call fetchZodCount here
           } else {
             console.log('No matching document for Employee.');
           }
@@ -116,8 +113,7 @@ const EmployeeDashboard = () => {
         const prevDay = new Date(today);
         prevDay.setDate(today.getDate() - 1);
 
-        const prevFormattedDate = `${prevDay.getDate()}-${prevDay.getMonth() + 1
-          }-${prevDay.getFullYear()}`;
+        const prevFormattedDate = `${prevDay.getDate()}-${prevDay.getMonth() + 1}-${prevDay.getFullYear()}`;
         const prevAttendanceDocRef = doc(
           db,
           `employeeDetails/${userId}/attendance`,
@@ -180,28 +176,6 @@ const EmployeeDashboard = () => {
     setShowIfscCode(!showIfscCode);
   };
 
-  // Function to fetch zodCount for a specific user
-  const fetchZodCount = async (userId) => {
-    try {
-      const docRef = doc(db, 'employeeDetails', userId, 'manage', userId);
-      const docSnapshot = await getDoc(docRef);
-
-      if (docSnapshot.exists()) {
-        const userData = docSnapshot.data();
-        const zodCount = userData.zodCount || 0; // Assuming default value is 0 if zodCount doesn't exist
-        setZodCount(zodCount); // Update zodCount state
-        console.log('Zod count for user', userId, 'is', zodCount);
-      } else {
-        console.log('No zod count found for user', userId);
-        setZodCount(0); // Set default value if document doesn't exist
-      }
-    } catch (error) {
-      console.error('Error fetching zodCount:', error);
-      setZodCount(0); // Handle error by setting default value
-    }
-  };
-
-
   const ContentSection = () => {
     switch (currentSection) {
       case 'profile':
@@ -262,23 +236,7 @@ const EmployeeDashboard = () => {
                 No department information available.
               </Typography>
             )}
-
-            <Box sx={{ textAlign: 'center', marginTop: '70px', marginBottom: '20px' }}>
-              <Typography variant="h5" sx={{ color: '#FF9800', marginBottom: '10px', fontSize: '24px' }}>
-                <EmojiEventsIcon sx={{ fontSize: '36px', verticalAlign: 'middle', marginRight: '10px' }} />
-                Zest Of The Day Count
-                <EmojiEventsIcon sx={{ fontSize: '36px', verticalAlign: 'middle', marginLeft: '10px' }} />
-              </Typography>
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                {loading ? (
-                  <CircularProgress size={20} sx={{ color: '#FF9800', marginRight: '10px' }} />
-                ) : (
-                  <Typography variant="body1" sx={{ color: '#4CAF50', fontSize: '20px' }}>
-                    Your current Zod count: {zodCount}
-                  </Typography>
-                )}
-              </Box>
-            </Box>
+            <ZodCountDisplay userId={auth.currentUser.uid} /> {/* Pass userId here */}
           </Section>
 
         );

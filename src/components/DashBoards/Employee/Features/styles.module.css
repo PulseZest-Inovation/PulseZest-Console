@@ -1,0 +1,16 @@
+/* styles.module.css */
+
+.balloon {
+    position: relative;
+    width: 20px;
+    height: 30px;
+    background: linear-gradient(transparent, transparent 7px, #f44336 7px, #f44336 10px, transparent 10px);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    animation: balloon 1s infinite ease-in-out;
+  }
+  
+  @keyframes balloon {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  
