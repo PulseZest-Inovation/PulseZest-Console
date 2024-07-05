@@ -3,7 +3,6 @@ import { signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged 
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Button from '@mui/material/Button';
 import { auth } from '../utils/firebaseConfig';
 import './styles.css';
 
@@ -141,14 +140,13 @@ const LoginFormPage = () => {
               <label htmlFor="password" className="active">Password</label>
               <span className="eye-icon" onClick={handleTogglePassword}>{showPassword ? "👁️" : "👁️‍🗨️"}</span>
             </div>
-            <Button id="submit-btn" variant="contained" onClick={handleLogin} className="submit-button"> 
-            
+            <a   id="submit-btn" onClick={handleLogin}>
               <span></span>
               <span></span>
               <span></span>
               <span></span>
               Submit
-              </Button>
+            </a>
             <p className="forgot-password" onClick={handleResetPassword} style={{ color: '#fff', cursor: 'pointer' }}>Forgot your password?</p>
           </form>
         </div>
