@@ -1,19 +1,25 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LoginFormPage from './pages/loginFormPage';
-import 'react-toastify/dist/ReactToastify.css';
 import Db from './pages/dbPage';
-import { ProtectedRoute, PublicRoute } from './utils/ProtectedRoute';
-import AdminControl from "./components/DashBoards/AdminControls/adminControl";
+import AdminControl from './components/DashBoards/AdminControls/adminControl';
+import EmployeeConsole from './components/DashBoards/Employee/Features/EmployeeConsole';
+import ChatPage from './pages/ChatPage'; // Import the ChatPage component
 
 function App() {
+  const [currentUser, setCurrentUser] = useState(null);
+
+ 
+
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<PublicRoute element={LoginFormPage} />} />
-        <Route path="/login" element={<PublicRoute element={LoginFormPage} />} />
-        <Route path="/db" element={<ProtectedRoute element={Db} />} />
-        <Route path="/admin-control" element={<ProtectedRoute element={AdminControl} />} />
+        <Route path="/" element={<LoginFormPage />} />
+        <Route path="/login" element={<LoginFormPage />} />
+        <Route path="/db" element={<Db />} />
+        <Route path="/admin-control" element={<AdminControl />} />
+        <Route path="/web-support" element={<EmployeeConsole />} />
+        <Route path="/ticket/:ticketId" element={<ChatPage />} />
       </Routes>
     </Router>
   );

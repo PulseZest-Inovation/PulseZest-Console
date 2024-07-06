@@ -6,7 +6,7 @@ import InternDashboard from '../components/DashBoards/Intern/InternDashboard';
 import EmployeeDashboard from '../components/DashBoards/Employee/EmployeeDashboard';
 import AppDevDashboard from '../components/DashBoards/AppDev/AppDevDashboard';
 import WebDevDashboard from '../components/DashBoards/WebDev/WebDevDashboard';
-
+import SoftWareDashboard from './DashBoards/softWare/softWare';
 const Dashboard = () => {
   const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
@@ -17,32 +17,64 @@ const Dashboard = () => {
       const user = auth.currentUser;
 
       if (user) {
-        const userId = user.uid;
+        const userId = user.uid; // Define userId here
 
         try {
-          // Attempt to fetch from each collection in sequence
-          const collectionsToCheck = ['internDetails', 'employeeDetails', 'appDevelopment', 'webDevelopment'];
-          let userDataFound = null;
+          // Check internDetails collection
+          const internDocRef = doc(collection(db, 'internDetails'), userId);
+          const internDocSnap = await getDoc(internDocRef);
 
-          for (const collectionName of collectionsToCheck) {
-            const docRef = doc(collection(db, collectionName), userId);
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-              userDataFound = docSnap.data();
-              break; // Exit loop if data is found
-            }
+          if (internDocSnap.exists()) {
+            setUserData(internDocSnap.data());
+            setLoading(false);
+            return;
           }
 
-          if (userDataFound) {
-            setUserData(userDataFound);
-          } else {
-            console.log('No matching document found for user.');
+          // Check employeeDetails collection
+          const employeeDocRef = doc(collection(db, 'employeeDetails'), userId);
+          const employeeDocSnap = await getDoc(employeeDocRef);
+
+          if (employeeDocSnap.exists()) {
+            setUserData(employeeDocSnap.data());
+            setLoading(false);
+            return;
           }
+
+          // Check appDevelopment collection
+          const appDevDocRef = doc(collection(db, 'appDevelopment'), userId);
+          const appDevDocSnap = await getDoc(appDevDocRef);
+
+          if (appDevDocSnap.exists()) {
+            setUserData(appDevDocSnap.data());
+            setLoading(false);
+            return;
+          }
+
+          // Check webDevelopment collection
+          const webDevDocRef = doc(collection(db, 'webDevelopment'), userId);
+          const webDevDocSnap = await getDoc(webDevDocRef);
+
+          if (webDevDocSnap.exists()) {
+            setUserData(webDevDocSnap.data());
+            setLoading(false);
+            return;
+          }
+
+           // Check webDevelopment collection
+           const softWareDocRef = doc(collection(db, 'softwareDevelopment'), userId);
+           const softWareDocSnap = await getDoc(softWareDocRef);
+ 
+           if (softWareDocSnap.exists()) {
+             setUserData(softWareDocSnap.data());
+             setLoading(false);
+             return;
+           }
+
+          // If no matching document is found
+          setLoading(false);
 
         } catch (error) {
           console.error('Error fetching user data:', error);
-        } finally {
           setLoading(false);
         }
       } else {
@@ -53,17 +85,41 @@ const Dashboard = () => {
     fetchUserData();
   }, [navigate]);
 
-  // Render loading state while fetching data
+  const checkCollection = async (collectionName, userId) => { // userId should be passed as an argument here
+    const docRef = doc(collection(db, collectionName), userId);
+    const docSnap = await getDoc(docRef);
+    return { exists: docSnap.exists(), data: docSnap.data() };
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (userData) {
+        const userId = auth.currentUser.uid; // Define userId here
+
+        const checkAppDev = await checkCollection('appDevelopment', userId);
+        const checkWebDev = await checkCollection('webDevelopment', userId);
+
+        if (checkAppDev.exists) {
+          setUserData(checkAppDev.data);
+        } else if (checkWebDev.exists) {
+          setUserData(checkWebDev.data);
+        }
+      }
+    };
+
+    fetchData();
+  }, [userData]);
+
   if (loading) {
     return <div>Loading...</div>;
   }
 
-  // Handle case where userData is null or undefined
   if (!userData) {
     // Redirect to login or show error message if user data not found
     navigate('/login', { replace: true });
     return null;
   }
+
 
   // Determine which dashboard component to render based on user data
   switch (userData.userType) {
@@ -75,7 +131,10 @@ const Dashboard = () => {
       return <AppDevDashboard userData={userData} />;
     case 'webDev':
       return <WebDevDashboard userData={userData} />;
+      case 'software':
+        return <SoftWareDashboard userData={userData} />;
     default:
+      // If userType is not defined, handle appropriately
       return <div>No dashboard found for user type.</div>;
   }
 };

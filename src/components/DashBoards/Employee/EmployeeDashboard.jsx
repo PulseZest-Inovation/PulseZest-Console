@@ -155,7 +155,11 @@ const EmployeeDashboard = () => {
   };
 
   const handleDepartmentClick = (dept) => {
-    console.log(`Clicked department: ${dept}`);
+    if (dept === 'Web Developer') {
+      navigate('/web-support');
+    } else {
+      console.log(`Clicked department: ${dept}`);
+    }
   };
 
   const handleLogout = async () => {
@@ -231,25 +235,25 @@ const EmployeeDashboard = () => {
       case 'workingDepartment':
         return (
           <Section>
-            <SectionTitle>Department & Role</SectionTitle>
-            {userData.department && userData.department.length > 0 ? (
-              userData.department.map((dept, index) => (
-                <Button
-                  key={index}
-                  variant="outlined"
-                  onClick={() => handleDepartmentClick(dept)}
-                  style={{ marginRight: '10px', marginBottom: '10px', textTransform: 'none' }}
-                >
-                  {dept}
-                </Button>
-              ))
-            ) : (
-              <Typography variant="body2" color="textSecondary" style={{ marginTop: '10px' }}>
-                No department information available.
-              </Typography>
-            )}
-            <ZodCountDisplay userId={auth.currentUser.uid} /> {/* Pass userId here */}
-          </Section>
+          <SectionTitle>Department & Role</SectionTitle>
+          {userData.department && userData.department.length > 0 ? (
+            userData.department.map((dept, index) => (
+              <Button
+                key={index}
+                variant="outlined"
+                onClick={() => handleDepartmentClick(dept)}
+                style={{ marginRight: '10px', marginBottom: '10px', textTransform: 'none' }}
+              >
+                {dept}
+              </Button>
+            ))
+          ) : (
+            <Typography variant="body2" color="textSecondary" style={{ marginTop: '10px' }}>
+              No department information available.
+            </Typography>
+          )}
+          <ZodCountDisplay userId={auth.currentUser.uid} /> {/* Pass userId here */}
+        </Section>
 
         );
       case 'documents':
