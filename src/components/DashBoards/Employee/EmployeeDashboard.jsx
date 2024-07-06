@@ -181,15 +181,11 @@ const EmployeeDashboard = () => {
     setOpenDialog(true);
   };
 
-   const handleOpenDialog = (imageUrl) => {
-    setDialogImageUrl(imageUrl);
-    setOpenDialog(true);
-  };
-
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setDialogImageUrl('');
   };
+
 
 
   const ContentSection = () => {
@@ -235,6 +231,30 @@ const EmployeeDashboard = () => {
       case 'workingDepartment':
         return (
           <Section>
+            <SectionTitle>Department & Role</SectionTitle>
+            {userData.department && userData.department.length > 0 ? (
+              userData.department.map((dept, index) => (
+                <Button
+                  key={index}
+                  variant="outlined"
+                  onClick={() => handleDepartmentClick(dept)}
+                  style={{ marginRight: '10px', marginBottom: '10px', textTransform: 'none' }}
+                >
+                  {dept}
+                </Button>
+              ))
+            ) : (
+              <Typography variant="body2" color="textSecondary" style={{ marginTop: '10px' }}>
+                No department information available.
+              </Typography>
+            )}
+            <ZodCountDisplay userId={auth.currentUser.uid} /> {/* Pass userId here */}
+          </Section>
+
+        );
+      case 'documents':
+        return (
+          <Section>
           <SectionTitle>Documents</SectionTitle>
           {userData.passportPhotoUrl && (
             <DataItem>
@@ -245,7 +265,7 @@ const EmployeeDashboard = () => {
                 <ViewButton
                   variant="contained"
                   color="primary"
-                  onClick={() => handleOpenDialog(userData.passportPhotoUrl)}
+                  onClick={() => handleViewFile(userData.passportPhotoUrl)}
                 >
                   View
                 </ViewButton>
@@ -261,7 +281,7 @@ const EmployeeDashboard = () => {
                 <ViewButton
                   variant="contained"
                   color="primary"
-                  onClick={() => handleOpenDialog(userData.resumeUrl)}
+                  onClick={() => handleViewFile(userData.resumeUrl)}
                 >
                   View
                 </ViewButton>
@@ -277,7 +297,7 @@ const EmployeeDashboard = () => {
                 <ViewButton
                   variant="contained"
                   color="primary"
-                  onClick={() => handleOpenDialog(userData.aadharCardUrl)}
+                  onClick={() => handleViewFile(userData.aadharCardUrl)}
                 >
                   View
                 </ViewButton>
@@ -293,7 +313,7 @@ const EmployeeDashboard = () => {
                 <ViewButton
                   variant="contained"
                   color="primary"
-                  onClick={() => handleOpenDialog(userData.panCardUrl)}
+                  onClick={() => handleViewFile(userData.panCardUrl)}
                 >
                   View
                 </ViewButton>
@@ -303,7 +323,12 @@ const EmployeeDashboard = () => {
     
           <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
             <DialogTitle>
-              <IconButton edge="end" color="inherit" onClick={handleCloseDialog} aria-label="close">
+              <IconButton
+                edge="end"
+                color="inherit"
+                onClick={handleCloseDialog}
+                aria-label="close"
+              >
                 <Close />
               </IconButton>
             </DialogTitle>
@@ -311,7 +336,7 @@ const EmployeeDashboard = () => {
               <img src={dialogImageUrl} alt="Document" style={{ width: '100%' }} />
             </DialogContent>
             <DialogActions>
-            
+             
             </DialogActions>
           </Dialog>
         </Section>

@@ -20,51 +20,29 @@ const Dashboard = () => {
         const userId = user.uid;
 
         try {
-          // Check internDetails collection
-          const internDocRef = doc(collection(db, 'internDetails'), userId);
-          const internDocSnap = await getDoc(internDocRef);
+          // Attempt to fetch from each collection in sequence
+          const collectionsToCheck = ['internDetails', 'employeeDetails', 'appDevelopment', 'webDevelopment'];
+          let userDataFound = null;
 
-          if (internDocSnap.exists()) {
-            setUserData(internDocSnap.data());
-            setLoading(false);
-            return;
+          for (const collectionName of collectionsToCheck) {
+            const docRef = doc(collection(db, collectionName), userId);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+              userDataFound = docSnap.data();
+              break; // Exit loop if data is found
+            }
           }
 
-          // Check employeeDetails collection
-          const employeeDocRef = doc(collection(db, 'employeeDetails'), userId);
-          const employeeDocSnap = await getDoc(employeeDocRef);
-
-          if (employeeDocSnap.exists()) {
-            setUserData(employeeDocSnap.data());
-            setLoading(false);
-            return;
+          if (userDataFound) {
+            setUserData(userDataFound);
+          } else {
+            console.log('No matching document found for user.');
           }
-
-          // Check appDevelopment collection
-          const appDevDocRef = doc(collection(db, 'appDevelopment'), userId);
-          const appDevDocSnap = await getDoc(appDevDocRef);
-
-          if (appDevDocSnap.exists()) {
-            setUserData(appDevDocSnap.data());
-            setLoading(false);
-            return;
-          }
-
-          // Check webDevelopment collection
-          const webDevDocRef = doc(collection(db, 'webDevelopment'), userId);
-          const webDevDocSnap = await getDoc(webDevDocRef);
-
-          if (webDevDocSnap.exists()) {
-            setUserData(webDevDocSnap.data());
-            setLoading(false);
-            return;
-          }
-
-          // If no matching document is found
-          setLoading(false);
 
         } catch (error) {
           console.error('Error fetching user data:', error);
+        } finally {
           setLoading(false);
         }
       } else {
@@ -75,10 +53,12 @@ const Dashboard = () => {
     fetchUserData();
   }, [navigate]);
 
+  // Render loading state while fetching data
   if (loading) {
     return <div>Loading...</div>;
   }
 
+  // Handle case where userData is null or undefined
   if (!userData) {
     // Redirect to login or show error message if user data not found
     navigate('/login', { replace: true });
