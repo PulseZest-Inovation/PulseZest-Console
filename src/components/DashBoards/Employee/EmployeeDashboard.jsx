@@ -4,7 +4,7 @@ import { signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../../../utils/firebaseConfig';
 import {
-  CircularProgress, Box, Typography, Button, Avatar, List, ListItem, ListItemIcon, ListItemText,
+  CircularProgress, Box, Dialog,DialogTitle,DialogContent, DialogActions,Typography, Button, Avatar, List, ListItem, ListItemIcon, ListItemText,
   Divider, BottomNavigation, BottomNavigationAction, useMediaQuery, useTheme,
 } from '@mui/material';
 import {
@@ -20,6 +20,7 @@ import {
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import ZodCountDisplay from "./Features/ZodCountDisplay";
+import { Close } from '@mui/icons-material';
 
 const EmployeeDashboard = () => {
   const navigate = useNavigate();
@@ -33,6 +34,8 @@ const EmployeeDashboard = () => {
   const [showIfscCode, setShowIfscCode] = useState(false);
   const theme = useTheme();
   const isMobileView = useMediaQuery(theme.breakpoints.down('sm'));
+  const [openDialog, setOpenDialog] = useState(false);
+  const [dialogImageUrl, setDialogImageUrl] = useState('');
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -164,9 +167,6 @@ const EmployeeDashboard = () => {
     }
   };
 
-  const handleViewFile = (fileUrl) => {
-    window.open(fileUrl);
-  };
 
   const handleToggleAccountNumber = () => {
     setShowAccountNumber(!showAccountNumber);
@@ -175,6 +175,22 @@ const EmployeeDashboard = () => {
   const handleToggleIfscCode = () => {
     setShowIfscCode(!showIfscCode);
   };
+
+  const handleViewFile = (fileUrl) => {
+    setDialogImageUrl(fileUrl);
+    setOpenDialog(true);
+  };
+
+   const handleOpenDialog = (imageUrl) => {
+    setDialogImageUrl(imageUrl);
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setDialogImageUrl('');
+  };
+
 
   const ContentSection = () => {
     switch (currentSection) {
@@ -219,96 +235,86 @@ const EmployeeDashboard = () => {
       case 'workingDepartment':
         return (
           <Section>
-            <SectionTitle>Department & Role</SectionTitle>
-            {userData.department && userData.department.length > 0 ? (
-              userData.department.map((dept, index) => (
-                <Button
-                  key={index}
-                  variant="outlined"
-                  onClick={() => handleDepartmentClick(dept)}
-                  style={{ marginRight: '10px', marginBottom: '10px', textTransform: 'none' }}
-                >
-                  {dept}
-                </Button>
-              ))
-            ) : (
-              <Typography variant="body2" color="textSecondary" style={{ marginTop: '10px' }}>
-                No department information available.
+          <SectionTitle>Documents</SectionTitle>
+          {userData.passportPhotoUrl && (
+            <DataItem>
+              <Typography variant="body1">
+                <strong>Passport Size Photo:</strong>
               </Typography>
-            )}
-            <ZodCountDisplay userId={auth.currentUser.uid} /> {/* Pass userId here */}
-          </Section>
-
-        );
-      case 'documents':
-        return (
-          <Section>
-            <SectionTitle>Documents</SectionTitle>
-            {userData.passportPhotoUrl && (
-              <DataItem>
-                <Typography variant="body1">
-                  <strong>Passport Size Photo:</strong>
-                </Typography>
-                <Box sx={{ display: 'block', alignItems: 'center', marginTop: '8px' }}>
-                  <ViewButton
-                    variant="contained"
-                    color="primary"
-                    onClick={() => handleViewFile(userData.passportPhotoUrl)}
-                  >
-                    View
-                  </ViewButton>
-                </Box>
-              </DataItem>
-            )}
-            {userData.resumeUrl && (
-              <DataItem>
-                <Typography variant="body1">
-                  <strong>Resume:</strong>
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}>
-                  <ViewButton
-                    variant="contained"
-                    color="primary"
-                    onClick={() => handleViewFile(userData.resumeUrl)}
-                  >
-                    View
-                  </ViewButton>
-                </Box>
-              </DataItem>
-            )}
-            {userData.aadharCardUrl && (
-              <DataItem>
-                <Typography variant="body1">
-                  <strong>Aadhar Card:</strong>
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}>
-                  <ViewButton
-                    variant="contained"
-                    color="primary"
-                    onClick={() => handleViewFile(userData.aadharCardUrl)}
-                  >
-                    View
-                  </ViewButton>
-                </Box>
-              </DataItem>
-            )}
-            {userData.panCardUrl && (
-              <DataItem>
-                <Typography variant="body1">
-                  <strong>Pan Card:</strong>
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}>
-                  <ViewButton
-                    variant="contained"
-                    color="primary"
-                    onClick={() => handleViewFile(userData.panCardUrl)}
-                  >
-                    View
-                  </ViewButton>
-                </Box>
-              </DataItem>
-            )}
-          </Section>
+              <Box sx={{ display: 'block', alignItems: 'center', marginTop: '8px' }}>
+                <ViewButton
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handleOpenDialog(userData.passportPhotoUrl)}
+                >
+                  View
+                </ViewButton>
+              </Box>
+            </DataItem>
+          )}
+          {userData.resumeUrl && (
+            <DataItem>
+              <Typography variant="body1">
+                <strong>Resume:</strong>
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}>
+                <ViewButton
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handleOpenDialog(userData.resumeUrl)}
+                >
+                  View
+                </ViewButton>
+              </Box>
+            </DataItem>
+          )}
+          {userData.aadharCardUrl && (
+            <DataItem>
+              <Typography variant="body1">
+                <strong>Aadhar Card:</strong>
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}>
+                <ViewButton
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handleOpenDialog(userData.aadharCardUrl)}
+                >
+                  View
+                </ViewButton>
+              </Box>
+            </DataItem>
+          )}
+          {userData.panCardUrl && (
+            <DataItem>
+              <Typography variant="body1">
+                <strong>Pan Card:</strong>
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}>
+                <ViewButton
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handleOpenDialog(userData.panCardUrl)}
+                >
+                  View
+                </ViewButton>
+              </Box>
+            </DataItem>
+          )}
+    
+          <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+            <DialogTitle>
+              <IconButton edge="end" color="inherit" onClick={handleCloseDialog} aria-label="close">
+                <Close />
+              </IconButton>
+            </DialogTitle>
+            <DialogContent dividers>
+              <img src={dialogImageUrl} alt="Document" style={{ width: '100%' }} />
+            </DialogContent>
+            <DialogActions>
+            
+            </DialogActions>
+          </Dialog>
+        </Section>
         );
       case 'bank':
         return (
