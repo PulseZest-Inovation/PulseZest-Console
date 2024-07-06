@@ -4,6 +4,7 @@ import { db } from '../../../../utils/firebaseConfig';
 import { Typography, CircularProgress, Button, Box } from '@mui/material';
 import Confetti from 'react-dom-confetti';
 import confettiSound from './confetti.wav';  // Make sure to provide the correct path to your sound file
+import { fontSize } from '@mui/system';
 
 const ZodCountDisplay = ({ userId }) => {
   const [zodCount, setZodCount] = useState(null);
@@ -81,22 +82,23 @@ const ZodCountDisplay = ({ userId }) => {
   }
 
   const confettiConfig = {
-    angle: 90,
-    spread: 360,
-    startVelocity: 40,
-    elementCount: 70,
-    dragFriction: 0.12,
-    duration: 3000,
-    stagger: 3,
-    width: '10px',
-    height: '10px',
-    colors: ['#a864fd', '#29cdff', '#78ff44', '#ff718d', '#fdff6a'],
+  angle: "360",
+  spread: "313",
+  startVelocity: "67",
+  elementCount: 70,
+  dragFriction: 0.12,
+  duration: "8200",
+  stagger: "6",
+  width: "17px",
+  height: "14px",
+  perspective: "500px",
+  colors: ["#a864fd", "#29cdff", "#78ff44", "#ff718d", "#fdff6a"]
   };
 
   return (
     <div>
       {zodCount !== null ? (
-        <Typography variant="body1">Zod Count: {zodCount}</Typography>
+        <Typography align='center'   variant="h3">Zod⚡Count: {zodCount} 🏆</Typography>
       ) : (
         <Typography variant="body1">No Zod count available.</Typography>
       )}
