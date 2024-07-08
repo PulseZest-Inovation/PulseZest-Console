@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../../../../utils/firebaseConfig'; // Adjust the path as per your setup
 import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { Card, CardContent, Typography, Button, Container, Grid } from '@mui/material';
+import { useMediaQuery } from '@mui/material';
 
 const EmployeeConsole = ({ isStaff }) => {
   const [tickets, setTickets] = useState([]);
   const navigate = useNavigate();
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -87,7 +89,7 @@ const EmployeeConsole = ({ isStaff }) => {
                     <Button
                       variant="contained"
                       color="secondary"
-                      style={{ textTransform: 'none', display: 'block', marginTop: '-60px', marginLeft: '700px' }}
+                      style={{ textTransform: 'none', display: 'block', marginTop: isMobile ? '10px' : '-60px', marginLeft: isMobile ? '0' : '700px' }}
                       onClick={() => handleChat(ticket.id)}
                     >
                       Chat

@@ -41,8 +41,8 @@ const ChatPage = () => {
   useEffect(() => {
     if (!currentUser) return;
 
-    const chatsCollectionRef = collection(db, 'messages', ticketId, 'chats');
-    const q = query(chatsCollectionRef, orderBy('timestamp', 'asc'));
+    const messagesCollectionRef = collection(db, 'tickets', ticketId, 'messages');
+    const q = query(messagesCollectionRef, orderBy('timestamp', 'asc'));
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const messagesData = querySnapshot.docs.map((doc) => ({
@@ -52,7 +52,7 @@ const ChatPage = () => {
       setMessages(messagesData);
     });
 
-    const typingDocRef = doc(db, 'types', ticketId);
+    const typingDocRef = doc(db, 'tickets', ticketId, 'types', 'typing');
     const unsubscribeTyping = onSnapshot(typingDocRef, (doc) => {
       const typingData = doc.data();
       if (typingData && typingData.typingUser !== currentUser) {
@@ -76,7 +76,7 @@ const ChatPage = () => {
       return;
     }
 
-    const chatsCollectionRef = collection(db, 'messages', ticketId, 'chats');
+    const messagesCollectionRef = collection(db, 'tickets', ticketId, 'messages');
 
     let fileUrl = null;
     if (file) {
@@ -85,14 +85,14 @@ const ChatPage = () => {
       fileUrl = await getDownloadURL(storageRef);
 
       // Store message with file URL in Firestore
-      await addDoc(chatsCollectionRef, {
+      await addDoc(messagesCollectionRef, {
         sender: currentUser,
         file: fileUrl,
         timestamp: serverTimestamp(),
       });
     } else {
       // Store text message in Firestore
-      await addDoc(chatsCollectionRef, {
+      await addDoc(messagesCollectionRef, {
         sender: currentUser,
         message: newMessage,
         timestamp: serverTimestamp(),
@@ -130,10 +130,10 @@ const ChatPage = () => {
   const handleTyping = (event) => {
     setNewMessage(event.target.value);
 
-    setDoc(doc(db, 'types', ticketId), { typingUser: currentUser });
+    setDoc(doc(db, 'tickets', ticketId, 'types', 'typing'), { typingUser: currentUser });
 
     setTimeout(() => {
-      setDoc(doc(db, 'types', ticketId), { typingUser: null });
+      setDoc(doc(db, 'tickets', ticketId, 'types', 'typing'), { typingUser: null });
     }, 2000);
   };
 
