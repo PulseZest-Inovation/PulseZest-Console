@@ -5,9 +5,11 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import ClearIcon from '@mui/icons-material/Clear';
-import { Typography, Paper, Grid, Snackbar, Alert, Chip, IconButton, FormControl, InputLabel, TextField, Select, MenuItem, Button, Box, CircularProgress } from '@mui/material';
+import { Typography, Paper, Grid, Chip, IconButton, FormControl, InputLabel, TextField, Select, MenuItem, Button, Box, CircularProgress } from '@mui/material';
 import { db } from '../../../../utils/firebaseConfig'; // Adjust path as per your project structure
 import { useNavigate } from 'react-router-dom'; // Import useNavigate from react-router-dom
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Ticket = ({ userId }) => {
   const [fullName, setFullName] = useState("");
@@ -18,7 +20,6 @@ const Ticket = ({ userId }) => {
   const [priority, setPriority] = useState("Medium");
   const [message, setMessage] = useState("");
   const [attachments, setAttachments] = useState([]);
-  const [toastOpen, setToastOpen] = useState(false);
   const [ticketOpen, setTicketOpen] = useState(false);
   const [ticketDetails, setTicketDetails] = useState(null);
   const [submittedTickets, setSubmittedTickets] = useState([]);
@@ -51,6 +52,14 @@ const Ticket = ({ userId }) => {
 
     fetchUserData();
     fetchSubmittedTickets();
+
+    // Set up periodic fetching of submitted tickets every 60 seconds
+    const interval = setInterval(() => {
+      fetchSubmittedTickets();
+    }, 60000);
+
+    // Clear interval on component unmount
+    return () => clearInterval(interval);
   }, [userId]);
 
   const fetchSubmittedTickets = async () => {
@@ -109,7 +118,7 @@ const Ticket = ({ userId }) => {
 
     try {
       await setDoc(ticketRef, ticketData);
-      setToastOpen(true);
+      toast.success("Ticket submitted successfully!");
       setSubject("");
       setRelatedService("None");
       setPriority("Medium");
@@ -138,13 +147,6 @@ const Ticket = ({ userId }) => {
     setAttachments(updatedAttachments);
   };
 
-  const handleToastClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setToastOpen(false);
-  };
-
   const toggleTicketForm = () => {
     setTicketOpen(!ticketOpen);
     setTicketDetails(null);
@@ -166,6 +168,7 @@ const Ticket = ({ userId }) => {
 
   return (
     <Paper elevation={3} sx={{ p: 4, maxWidth: 1000, width: '100%', mt: 2, mb: 2, maxHeight: '80vh', overflow: 'auto' }}>
+      <ToastContainer />
       <Typography variant="h4" gutterBottom>Open New Ticket</Typography>
       {(!ticketOpen && !ticketDetails) && (
         <Button onClick={toggleTicketForm} variant="contained" color="primary">Open Ticket</Button>
@@ -305,7 +308,7 @@ const Ticket = ({ userId }) => {
         </form>
       )}
 
-      {submittedTickets.length > 0 && !ticketOpen && (
+      {submittedTickets.length > 0 ? (
         <Box sx={{ mt: 2 }}>
           <Typography variant="h4" gutterBottom>Submitted Tickets</Typography>
           {submittedTickets.map((ticket, index) => (
@@ -322,18 +325,16 @@ const Ticket = ({ userId }) => {
                 disabled={ticket.status === "Open"}
                 onClick={() => handleChat(ticket.ticketId)}
               >
-                Chat Ticket
+                {ticket.status === "Open" ? "Waiting for support management approval to chat" : "Chat Ticket"}
               </Button>
             </Box>
           ))}
         </Box>
+      ) : (
+        <Typography variant="subtitle1" sx={{ mt: 2 }}>
+          No tickets have been created.
+        </Typography>
       )}
-
-      <Snackbar open={toastOpen} autoHideDuration={6000} onClose={handleToastClose}>
-        <Alert onClose={handleToastClose} severity="success" sx={{ width: '100%' }}>
-          Ticket submitted successfully!
-        </Alert>
-      </Snackbar>
     </Paper>
   );
 };

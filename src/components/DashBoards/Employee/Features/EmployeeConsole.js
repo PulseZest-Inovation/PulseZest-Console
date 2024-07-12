@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../../utils/firebaseConfig'; // Adjust the path as per your setup
-import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { collection, onSnapshot, updateDoc, doc } from 'firebase/firestore';
 import { Card, CardContent, Typography, Button, Container, Grid } from '@mui/material';
 import { useMediaQuery } from '@mui/material';
 
@@ -11,23 +11,21 @@ const EmployeeConsole = ({ isStaff }) => {
   const isMobile = useMediaQuery('(max-width:600px)');
 
   useEffect(() => {
-    const fetchTickets = async () => {
-      try {
-        const ticketsCollectionRef = collection(db, 'tickets');
-        const snapshot = await getDocs(ticketsCollectionRef);
+    const ticketsCollectionRef = collection(db, 'tickets');
+    
+    // Setting up a real-time listener
+    const unsubscribe = onSnapshot(ticketsCollectionRef, (snapshot) => {
+      const ticketsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setTickets(ticketsData);
+    }, (error) => {
+      console.error('Error fetching tickets:', error);
+    });
 
-        const ticketsData = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-
-        setTickets(ticketsData);
-      } catch (error) {
-        console.error('Error fetching tickets:', error);
-      }
-    };
-
-    fetchTickets();
+    // Cleanup the subscription on component unmount
+    return () => unsubscribe();
   }, []);
 
   const handleChat = async (ticketId) => {
