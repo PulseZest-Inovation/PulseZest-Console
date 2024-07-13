@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { db } from '../../../../utils/firebaseConfig'; // Adjust the path as per your setup
+import { db } from '../../../../../utils/firebaseConfig'; // Adjust the path as per your setup
 import { collection, onSnapshot, updateDoc, doc } from 'firebase/firestore';
 import { Card, CardContent, Typography, Button, Container, Grid } from '@mui/material';
 import { useMediaQuery } from '@mui/material';

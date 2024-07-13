@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
-import { db } from '../../../../utils/firebaseConfig';
+import { db } from '../../../../../utils/firebaseConfig';
 import { Typography, CircularProgress, Button, Box } from '@mui/material';
 import Confetti from 'react-dom-confetti';
 import confettiSound from './confetti.wav';  // Make sure to provide the correct path to your sound file

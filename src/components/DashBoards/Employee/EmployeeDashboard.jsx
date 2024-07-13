@@ -19,8 +19,10 @@ import {
   IconButton, Table, TableBody, TableCell, TableContainer, TableRow
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import ZodCountDisplay from "./Features/ZodCountDisplay";
+import ZodCountDisplay from "./Features/Zod/ZodCountDisplay";
 import { Close } from '@mui/icons-material';
+import Notification from './Features/Notifications/page';
+
 
 const EmployeeDashboard = () => {
   const navigate = useNavigate();
@@ -450,6 +452,10 @@ const EmployeeDashboard = () => {
           <Typography variant="h4">Welcome to PulseZest!</Typography>
           <CompanyLogo src={companyLogo} alt="Company Logo" />
         </TitleContainer>
+
+        {/*Notification*/}
+        <Notification/>
+        
         <Button
           startIcon={<Logout />}
           variant="contained"

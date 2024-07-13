@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LoginFormPage from './pages/loginFormPage';
 import Db from './pages/dbPage';
 import AdminControl from './components/DashBoards/AdminControls/adminControl';
-import EmployeeConsole from './components/DashBoards/Employee/Features/EmployeeConsole';
+import EmployeeConsole from './components/DashBoards/Employee/Features/Console/EmployeeConsole';
 import ChatPage from './pages/ChatPage'; // Import the ChatPage component
 
 function App() {
