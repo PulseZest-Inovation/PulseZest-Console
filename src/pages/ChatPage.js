@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { db, storage } from '../utils/firebaseConfig';
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, setDoc, updateDoc } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { Typography, Container, TextField, Button, List, ListItem, Box, IconButton, AppBar, Toolbar, CssBaseline, Switch, Avatar, createTheme, ThemeProvider, Dialog, DialogContent,CircularProgress  } from '@mui/material';
-import { Send, AttachFile, Brightness4, Brightness7, Check } from '@mui/icons-material';
+import { Typography, Container, TextField, Button, List, ListItem, Box, IconButton, AppBar, Toolbar, CssBaseline, Switch, Avatar, createTheme, ThemeProvider, Dialog, DialogContent, CircularProgress } from '@mui/material';
+import { Send, AttachFile, Brightness4, Brightness7, Check, Close } from '@mui/icons-material';
 import styled from 'styled-components';
 import AvatarImage from '../assets/2.png'; // Update with your avatar image path
 
@@ -16,16 +16,32 @@ const ChatPage = () => {
   const [newMessage, setNewMessage] = useState('');
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [fileUploading, setFileUploading] = useState(false); // New state for file uploading
+  const [fileName, setFileName] = useState(''); // New state for file name
   const [darkMode, setDarkMode] = useState(false);
   const [typingUser, setTypingUser] = useState(null);
   const [openImageDialog, setOpenImageDialog] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
+  const [chatClosed, setChatClosed] = useState(false); // New state for chat closed
 
   const theme = createTheme({
     palette: {
       mode: darkMode ? 'dark' : 'light',
     },
   });
+
+  useEffect(() => {
+    const fetchChatStatus = async () => {
+      const chatDocRef = doc(db, 'tickets', ticketId);
+      const chatDocSnapshot = await getDoc(chatDocRef);
+      if (chatDocSnapshot.exists()) {
+        const { chatClosed } = chatDocSnapshot.data();
+        setChatClosed(chatClosed || false);
+      }
+    };
+
+    fetchChatStatus();
+  }, [ticketId]);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -78,6 +94,7 @@ const ChatPage = () => {
 
     try {
       if (file) {
+        setFileUploading(true); // Set file uploading state
         const storageRef = ref(storage, `attachments/${ticketId}/messages/${file.name}`);
         const snapshot = await uploadBytes(storageRef, file);
         const fileUrl = await getDownloadURL(snapshot.ref);
@@ -86,10 +103,11 @@ const ChatPage = () => {
         await addDoc(messagesCollectionRef, {
           sender: currentUser,
           file: fileUrl,
+          fileType: file.type,
           timestamp: serverTimestamp(),
           read: false,
         });
-
+        setFileUploading(false); // Reset file uploading state
       } else {
         // Store text message in Firestore
         await addDoc(messagesCollectionRef, {
@@ -102,6 +120,7 @@ const ChatPage = () => {
 
       setNewMessage('');
       setFile(null);
+      setFileName(''); // Reset file name
     } catch (error) {
       console.error('Error sending message:', error);
     } finally {
@@ -116,34 +135,47 @@ const ChatPage = () => {
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
     setFile(selectedFile);
+    setFileName(selectedFile.name); // Set file name
 
-    if (selectedFile) {
-      if (selectedFile.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.readAsDataURL(selectedFile);
-        reader.onload = () => {
-          setPreviewImage(reader.result);
-          setOpenImageDialog(true);
-        };
-      } else {
-        setPreviewImage(null); // Reset preview for non-image files
-      }
+    if (selectedFile && selectedFile.type && selectedFile.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.readAsDataURL(selectedFile);
+      reader.onload = () => {
+        setPreviewImage(reader.result);
+        setOpenImageDialog(true);
+      };
+    } else {
+      setPreviewImage(null); // Reset preview for non-image files
     }
   };
 
   const handleTyping = (event) => {
-    setNewMessage(event.target.value);
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      handleSendMessage();
+    } else {
+      setNewMessage(event.target.value);
+      setDoc(doc(db, 'tickets', ticketId, 'types', 'typing'), { typingUser: currentUser });
 
-    setDoc(doc(db, 'tickets', ticketId, 'types', 'typing'), { typingUser: currentUser });
-
-    setTimeout(() => {
-      setDoc(doc(db, 'tickets', ticketId, 'types', 'typing'), { typingUser: null });
-    }, 2000);
+      setTimeout(() => {
+        setDoc(doc(db, 'tickets', ticketId, 'types', 'typing'), { typingUser: null });
+      }, 2000);
+    }
   };
 
   const handleCloseImageDialog = () => {
     setOpenImageDialog(false);
     setPreviewImage(null);
+  };
+
+  const formatMessage = (message) => {
+    // Replace bold markers with <strong> tags
+    return message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  };
+
+  const toggleChatClosed = async () => {
+    setChatClosed(!chatClosed);
+    await updateDoc(doc(db, 'tickets', ticketId), { chatClosed: !chatClosed });
   };
 
   return (
@@ -156,6 +188,11 @@ const ChatPage = () => {
             Chat for Ticket ID: {ticketId}
           </Typography>
           <Switch checked={darkMode} onChange={handleModeChange} icon={<Brightness7 />} checkedIcon={<Brightness4 />} />
+          {!chatClosed && (
+            <Button variant="contained" color="secondary" onClick={toggleChatClosed} startIcon={<Close />}>
+              Close Chat
+            </Button>
+          )}
         </Toolbar>
       </AppBar>
       <Container maxWidth="md" style={{ padding: '20px', height: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column', background: darkMode ? '#333' : '#fff' }}>
@@ -164,41 +201,36 @@ const ChatPage = () => {
             <ListItem key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: currentUser === msg.sender ? 'flex-end' : 'flex-start' }}>
               <MessageBox isOwnMessage={currentUser === msg.sender} theme={theme} darkMode={darkMode}>
                 {msg.message && (
-                  <Typography variant="body2" component="p" style={{ marginBottom: '5px' }}>
-                    {msg.message}
-                  </Typography>
+                  <Typography
+                    variant="body2"
+                    component="p"
+                    style={{ marginBottom: '5px' }}
+                    dangerouslySetInnerHTML={{ __html: formatMessage(msg.message) }}
+                  />
                 )}
                 {msg.file && (
-                  <>
-                    {msg.file.startsWith('data:image') && (
-                      <img
+                  <FilePreview>
+                    {msg.fileType && msg.fileType.startsWith('image/') && (
+                      <ChatImage
                         src={msg.file}
                         alt="file"
-                        style={{ maxWidth: '100%', borderRadius: '10px', marginTop: '5px', cursor: 'pointer' }}
                         onClick={() => { setPreviewImage(msg.file); setOpenImageDialog(true); }}
                       />
                     )}
-                    {msg.file.startsWith('video/') && (
+                    {msg.fileType && msg.fileType.startsWith('video/') && (
                       <video controls style={{ maxWidth: '100%', borderRadius: '10px', marginTop: '5px', cursor: 'pointer' }}>
                         <source src={msg.file} type={msg.file.split('.').pop()} />
                         Your browser does not support the video tag.
                       </video>
                     )}
-                    {msg.file.startsWith('application/pdf') && (
+                    {msg.fileType === 'application/pdf' && (
                       <iframe
                         src={msg.file}
                         title="file"
-                        style={{
-                          width: '100%',
-                          height: '500px',
-                          border: 'none',
-                          borderRadius: '10px',
-                          marginTop: '5px',
-                          backgroundColor: darkMode ? '#333' : '#fff',
-                        }}
+                        style={{ width: '100%', height: '500px', border: 'none', borderRadius: '10px', marginTop: '5px', backgroundColor: darkMode ? '#333' : '#fff' }}
                       />
                     )}
-                  </>
+                  </FilePreview>
                 )}
                 <Typography variant="caption" display="block" style={{ textAlign: 'right', marginTop: '5px', display: 'flex', alignItems: 'center' }}>
                   {msg.sender === currentUser ? 'You' : msg.sender}
@@ -217,31 +249,43 @@ const ChatPage = () => {
             </ListItem>
           )}
         </List>
-        <Box component="form" onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} style={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
-          <TextField
-            fullWidth
-            variant="outlined"
-            placeholder="Type your message..."
-            value={newMessage}
-            onChange={handleTyping}
-            style={{ marginRight: '10px' }}
-          />
-          <input
-            accept="image/*,video/*,.pdf"
-            style={{ display: 'none' }}
-            id="file-input"
-            type="file"
-            onChange={handleFileChange}
-          />
-          <label htmlFor="file-input">
-            <IconButton color="primary" component="span" style={{ marginRight: '10px' }}>
-              <AttachFile />
-            </IconButton>
-          </label>
-          <Button variant="contained" color="primary" endIcon={<Send />} type="submit">
-            {uploading ? <CircularProgress size={24} /> : 'Send'}
-          </Button>
-        </Box>
+        {!chatClosed ? (
+          <Box component="form" onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} style={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
+            <TextField
+              fullWidth
+              variant="outlined"
+              placeholder="Type your message..."
+              value={newMessage}
+              onChange={handleTyping}
+              onKeyDown={handleTyping}
+              multiline
+              minRows={2}
+              style={{ marginRight: '10px' }}
+            />
+            {fileName && (
+              <Typography variant="body2" style={{ marginRight: '10px' }}>
+                {fileName}
+              </Typography>
+            )}
+            <input
+              accept="image/*,video/*,.pdf"
+              style={{ display: 'none' }}
+              id="file-input"
+              type="file"
+              onChange={handleFileChange}
+            />
+            <label htmlFor="file-input">
+              <IconButton color="primary" component="span" style={{ marginRight: '10px' }}>
+                <AttachFile />
+              </IconButton>
+            </label>
+            <Button variant="contained" color="primary" endIcon={<Send />} type="submit">
+              {uploading ? <CircularProgress size={24} style={{ color: 'orange' }} /> : 'Send'}
+            </Button>
+          </Box>
+        ) : (
+          <Typography color="error" variant="body1">Chat is closed. You can only read messages.</Typography>
+        )}
         <Dialog open={openImageDialog} onClose={handleCloseImageDialog}>
           <DialogContent>{previewImage && <img src={previewImage} alt="Preview" style={{ width: '100%', borderRadius: '10px' }} />}</DialogContent>
         </Dialog>
@@ -253,14 +297,65 @@ const ChatPage = () => {
 // Create a styled component for Message box
 const MessageBox = styled(Box)`
   background-color: ${({ isOwnMessage, theme, darkMode }) =>
-    isOwnMessage ? (darkMode ? theme.palette.primary.dark : theme.palette.primary.main) : darkMode ? theme.palette.background.default : theme.palette.background.paper};
-  color: ${({ isOwnMessage, theme, darkMode }) =>
+    isOwnMessage ? (darkMode ? theme.palette.primary.dark : theme.palette.primary.main) : (darkMode ? theme.palette.background.default : theme.palette.background.paper)};
+  color: ${({ isOwnMessage, theme }) =>
     isOwnMessage ? theme.palette.primary.contrastText : theme.palette.text.primary};
   padding: 10px;
   border-radius: 10px;
   max-width: 70%;
   word-break: break-word;
+  display: flex;
+  flex-direction: column;
+  align-items: ${({ isOwnMessage }) => (isOwnMessage ? 'flex-end' : 'flex-start')};
+
+  // Add styles for small, medium, and large screens
+  @media (max-width: 600px) {
+    max-width: 90%;
+  }
+  @media (min-width: 600px) and (max-width: 1200px) {
+    max-width: 80%;
+  }
+  @media (min-width: 1200px) {
+    max-width: 70%;
+  }
+`;
+
+const FilePreview = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 5px;
+  
+  // Add these styles to ensure the image box maintains a square aspect ratio
+  width: 200px; // Adjust the size as needed
+  height: 200px; // Adjust the size as needed
+  overflow: hidden; // Hide overflow to ensure square aspect ratio
+
+  @media (max-width: 600px) {
+    width: 150px; 
+    height: 150px;
+  }
+  @media (min-width: 600px) and (max-width: 1200px) {
+    width: 175px; 
+    height: 175px;
+  }
+`;
+
+const ChatImage = styled.img`
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  cursor: pointer;
+  object-fit: cover; // Ensure the image covers the box while maintaining its aspect ratio
+  
+  @media (max-width: 600px) {
+    width: 100%;
+    height: 100%;
+  }
+  @media (min-width: 600px) and (max-width: 1200px) {
+    width: 100%;
+    height: 100%;
+  }
 `;
 
 export default ChatPage;
-

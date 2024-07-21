@@ -5,7 +5,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import ClearIcon from '@mui/icons-material/Clear';
-import { Typography, Paper, Grid, Chip, IconButton, FormControl, InputLabel, TextField, Select, MenuItem, Button, Box, CircularProgress } from '@mui/material';
+import { Typography, Paper, Grid, Chip, IconButton, FormControl, InputLabel, TextField, Select, MenuItem, Button, Box, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
 import { db } from '../../../../utils/firebaseConfig'; // Adjust path as per your project structure
 import { useNavigate } from 'react-router-dom'; // Import useNavigate from react-router-dom
 import { ToastContainer, toast } from 'react-toastify';
@@ -25,6 +25,9 @@ const Ticket = ({ userId }) => {
   const [submittedTickets, setSubmittedTickets] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate(); // Initialize navigate
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -77,7 +80,6 @@ const Ticket = ({ userId }) => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
     setLoading(true); // Show loader while submitting
 
     // Generate a random 6-digit ID for the ticket
@@ -167,7 +169,7 @@ const Ticket = ({ userId }) => {
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 4, maxWidth: 1000, width: '100%', mt: 2, mb: 2, maxHeight: '80vh', overflow: 'auto' }}>
+    <Paper elevation={3} sx={{ p: 3, maxWidth: isMobile ? '100%' : '1000px', width: '100%', mt: 2, mb: 2, maxHeight: '60vh', overflow: 'auto' }}>
       <ToastContainer />
       <Typography variant="h4" gutterBottom>Open New Ticket</Typography>
       {(!ticketOpen && !ticketDetails) && (
@@ -177,7 +179,7 @@ const Ticket = ({ userId }) => {
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2} mt={2}>
             <Grid item xs={12} md={6}>
-              <FormControl fullWidth margin="normal">
+              <FormControl fullWidth>
                 <InputLabel shrink>Name</InputLabel>
                 <TextField
                   value={fullName}
@@ -188,7 +190,7 @@ const Ticket = ({ userId }) => {
               </FormControl>
             </Grid>
             <Grid item xs={12} md={6}>
-              <FormControl fullWidth margin="normal">
+              <FormControl fullWidth>
                 <InputLabel shrink>Email Address</InputLabel>
                 <TextField
                   value={email}
@@ -208,7 +210,7 @@ const Ticket = ({ userId }) => {
               />
             </Grid>
             <Grid item xs={12} md={4}>
-              <FormControl fullWidth margin="normal">
+              <FormControl fullWidth>
                 <InputLabel shrink>Department</InputLabel>
                 <TextField
                   value={department}
@@ -219,7 +221,7 @@ const Ticket = ({ userId }) => {
               </FormControl>
             </Grid>
             <Grid item xs={12} md={4}>
-              <FormControl fullWidth margin="normal" variant="outlined">
+              <FormControl fullWidth variant="outlined">
                 <InputLabel shrink>Related Service</InputLabel>
                 <Select
                   value={relatedService}
@@ -234,7 +236,7 @@ const Ticket = ({ userId }) => {
               </FormControl>
             </Grid>
             <Grid item xs={12} md={4}>
-              <FormControl fullWidth margin="normal" variant="outlined">
+              <FormControl fullWidth variant="outlined">
                 <InputLabel shrink>Priority</InputLabel>
                 <Select
                   value={priority}
@@ -279,7 +281,6 @@ const Ticket = ({ userId }) => {
                       color="primary"
                       variant="outlined"
                       deleteIcon={<ClearIcon />}
-                      sx={{ zIndex: 1 }}
                     />
                   </Grid>
                 ))}
@@ -312,7 +313,7 @@ const Ticket = ({ userId }) => {
         <Box sx={{ mt: 2 }}>
           <Typography variant="h4" gutterBottom>Submitted Tickets</Typography>
           {submittedTickets.map((ticket, index) => (
-            <Box key={index} sx={{ border: 1, borderColor: 'grey.300', p: 2, mt: 2 }}>
+            <Box key={index} sx={{ boxShadow: 1, p: 2, borderRadius: 1, mb: 2 }}>
               <Typography variant="subtitle1">Subject: {ticket.subject}</Typography>
               <Typography variant="subtitle1">Related Service: {ticket.relatedService}</Typography>
               <Typography variant="subtitle1">Priority: {ticket.priority}</Typography>

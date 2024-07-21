@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
-import { doc, writeBatch, collection, onSnapshot } from 'firebase/firestore';
+import { doc, writeBatch, collection, onSnapshot, updateDoc, getDocs } from 'firebase/firestore';
 import { auth, db } from '../../../../../utils/firebaseConfig';
 import {
   IconButton, Typography, Badge, Menu, MenuItem, Avatar, Box, List, ListItem, ListItemAvatar, ListItemText, Divider
@@ -15,6 +15,8 @@ const Notification = () => {
   const [unseenCount, setUnseenCount] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
   const notificationSound = useRef(new Audio(bellSound));
+  const isNewNotification = useRef(false); // Ref to track new notifications
+  const [isSoundUnlocked, setIsSoundUnlocked] = useState(false);
 
   useEffect(() => {
     const user = auth.currentUser;
@@ -22,25 +24,74 @@ const Notification = () => {
       const userId = user.uid;
       const notificationsCollectionRef = collection(db, `employeeDetails/${userId}/notifications`);
 
+      // Fetch initial notifications and check for 'notSeen' sound
+      const fetchInitialNotifications = async () => {
+        try {
+          const querySnapshot = await getDocs(notificationsCollectionRef);
+          const initialNotifications = [];
+
+          querySnapshot.forEach((doc) => {
+            const notification = { id: doc.id, ...doc.data() };
+            initialNotifications.push(notification);
+
+            if (!notification.seen && notification.sound === 'notSeen') {
+              if (isSoundUnlocked) {
+                notificationSound.current.play().catch(error => console.error('Error playing notification sound:', error));
+              }
+            }
+          });
+
+          setNotifications(initialNotifications);
+
+          // Update unseen count
+          const unseenNotifications = initialNotifications.filter(notification => !notification.seen && notification.sound === 'notSeen').length;
+          setUnseenCount(unseenNotifications);
+
+          isNewNotification.current = true; // Set flag to true after the first update
+        } catch (error) {
+          console.error('Error fetching initial notifications:', error);
+        }
+      };
+
+      fetchInitialNotifications();
+
       // Real-time listener for notifications
       const unsubscribe = onSnapshot(notificationsCollectionRef, (querySnapshot) => {
-        const notificationsData = [];
+        const updatedNotifications = [];
+
         querySnapshot.forEach((doc) => {
           const notification = { id: doc.id, ...doc.data() };
-          notificationsData.push(notification);
+          updatedNotifications.push(notification);
+
+          if (!notification.seen && notification.sound === 'notSeen') {
+            if (isSoundUnlocked) {
+              notificationSound.current.play().catch(error => console.error('Error playing notification sound:', error));
+            }
+          }
         });
+
         // Sort notifications by timestamp (newest first)
-        notificationsData.sort((a, b) => b.timestamp - a.timestamp);
-        setNotifications(notificationsData);
+        updatedNotifications.sort((a, b) => b.timestamp - a.timestamp);
+        setNotifications(updatedNotifications);
 
         // Update unseen count
-        const unseenNotifications = notificationsData.filter(notification => !notification.seen).length;
+        const unseenNotifications = updatedNotifications.filter(notification => !notification.seen && notification.sound === 'notSeen').length;
         setUnseenCount(unseenNotifications);
       });
 
       // Cleanup listener on unmount
       return () => unsubscribe();
     }
+  }, [isSoundUnlocked]);
+
+  useEffect(() => {
+    const unlockSound = () => {
+      setIsSoundUnlocked(true);
+      document.removeEventListener('click', unlockSound);
+    };
+    document.addEventListener('click', unlockSound);
+
+    return () => document.removeEventListener('click', unlockSound);
   }, []);
 
   const handleLogout = async () => {
@@ -54,10 +105,7 @@ const Notification = () => {
 
   const handleOpenNotifications = async (event) => {
     setAnchorEl(event.currentTarget);
-    
-    if (unseenCount > 0) {
-      notificationSound.current.play().catch(error => console.error('Error playing notification sound:', error));
-    }
+    isNewNotification.current = false; // Reset flag when user opens notifications
 
     // Update notifications status to 'seen' in the database
     const user = auth.currentUser;
@@ -66,13 +114,18 @@ const Notification = () => {
       const batch = writeBatch(db);
 
       notifications.forEach((notification) => {
-        if (!notification.seen) {
+        if (!notification.seen && notification.sound === 'notSeen') {
           const docRef = doc(db, `employeeDetails/${userId}/notifications`, notification.id);
-          batch.update(docRef, { seen: true });
+          batch.update(docRef, { seen: true, sound: 'seen' });
         }
       });
 
-      await batch.commit();
+      try {
+        await batch.commit();
+        setUnseenCount(0); // Reset unseen count after marking as seen
+      } catch (error) {
+        console.error('Error marking notifications as seen:', error);
+      }
     }
   };
 
@@ -84,7 +137,6 @@ const Notification = () => {
     <Box display="flex" alignItems="center" justifyContent="space-between" px={2}>
       <Box sx={{ flexGrow: 1 }}>
         {/* Your other header elements can go here */}
-       
       </Box>
       <Box>
         <IconButton
