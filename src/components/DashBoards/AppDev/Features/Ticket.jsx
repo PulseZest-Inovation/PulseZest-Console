@@ -5,9 +5,24 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import ClearIcon from '@mui/icons-material/Clear';
-import { Typography, Paper, Grid, Chip, IconButton, FormControl, InputLabel, TextField, Select, MenuItem, Button, Box, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
-import { db } from '../../../../utils/firebaseConfig'; // Adjust path as per your project structure
-import { useNavigate } from 'react-router-dom'; // Import useNavigate from react-router-dom
+import {
+  Typography,
+  Paper,
+  Grid,
+  Chip,
+  IconButton,
+  FormControl,
+  InputLabel,
+  TextField,
+  Select,
+  MenuItem,
+  Button,
+  Box,
+  CircularProgress,
+  useMediaQuery,
+  useTheme
+} from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -24,15 +39,20 @@ const Ticket = ({ userId }) => {
   const [ticketDetails, setTicketDetails] = useState(null);
   const [submittedTickets, setSubmittedTickets] = useState([]);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate();
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
     const fetchUserData = async () => {
+      if (!userId) {
+        console.error("User ID is undefined");
+        return;
+      }
+
       const firestore = getFirestore();
-      const userRef = doc(firestore, "webDevelopment", userId);
+      const userRef = doc(firestore, "appDevelopment", userId);
 
       try {
         const docSnap = await getDoc(userRef);
@@ -40,8 +60,8 @@ const Ticket = ({ userId }) => {
           const userData = docSnap.data();
           setFullName(userData.fullName);
           setEmail(userData.email);
-          if (userData.userType === "webDev") {
-            setDepartment("WebDevelopment");
+          if (userData.userType === "appDev") {
+            setDepartment("AppDevelopment");
           } else {
             setDepartment(userData.department || "");
           }
@@ -54,37 +74,34 @@ const Ticket = ({ userId }) => {
     };
 
     fetchUserData();
-    fetchSubmittedTickets();
-
-   // Fetch tickets every 60 seconds only if department is set
-   if (department) {
-    fetchSubmittedTickets();
-    const interval = setInterval(() => {
+    // Fetch tickets every 60 seconds only if department is set
+    if (department) {
       fetchSubmittedTickets();
-    }, 60000);
-    return () => clearInterval(interval);
-  }
-}, [userId, department]);
+      const interval = setInterval(() => {
+        fetchSubmittedTickets();
+      }, 60000);
+      return () => clearInterval(interval);
+    }
+  }, [userId, department]);
 
-const fetchSubmittedTickets = async () => {
-  const firestore = getFirestore();
-  const ticketsCollectionRef = collection(firestore, 'tickets');
+  const fetchSubmittedTickets = async () => {
+    const firestore = getFirestore();
+    const ticketsCollectionRef = collection(firestore, 'tickets');
 
-  try {
-    const snapshot = await getDocs(ticketsCollectionRef);
-    const tickets = snapshot.docs.map(doc => doc.data());
-    // Filter tickets by department
-    const filteredTickets = tickets.filter(ticket => ticket.department === department);
-    setSubmittedTickets(filteredTickets);
-  } catch (error) {
-    console.error("Error fetching tickets:", error);
-  }
-};
-
+    try {
+      const snapshot = await getDocs(ticketsCollectionRef);
+      const tickets = snapshot.docs.map(doc => doc.data());
+      // Filter tickets by department
+      const filteredTickets = tickets.filter(ticket => ticket.department === department);
+      setSubmittedTickets(filteredTickets);
+    } catch (error) {
+      console.error("Error fetching tickets:", error);
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setLoading(true); // Show loader while submitting
+    setLoading(true);
 
     // Generate a random 6-digit ID for the ticket
     const ticketId = Math.floor(100000 + Math.random() * 900000);
@@ -102,7 +119,7 @@ const fetchSubmittedTickets = async () => {
       }
     } catch (error) {
       console.error("Error uploading attachments:", error);
-      setLoading(false); // Hide loader on error
+      setLoading(false);
       return;
     }
 
@@ -131,12 +148,12 @@ const fetchSubmittedTickets = async () => {
       setMessage("");
       setAttachments([]);
       setTicketDetails(ticketData);
-      setSubmittedTickets([...submittedTickets, ticketData]);
-      setLoading(false); // Hide loader on success
-      setTicketOpen(false); // Close ticket form after submission
+      setSubmittedTickets(prevTickets => [...prevTickets, ticketData]);
+      setLoading(false);
+      setTicketOpen(false);
     } catch (error) {
       console.error("Error adding document:", error);
-      setLoading(false); // Hide loader on error
+      setLoading(false);
     }
   };
 
@@ -144,17 +161,19 @@ const fetchSubmittedTickets = async () => {
     const files = event.target.files;
     const allowedTypes = ['image/jpeg', 'image/png', 'video/mp4'];
     const newAttachments = Array.from(files).filter(file => allowedTypes.includes(file.type));
-    setAttachments([...attachments, ...newAttachments]);
+    setAttachments(prevAttachments => [...prevAttachments, ...newAttachments]);
   };
 
   const handleRemoveAttachment = (index) => {
-    const updatedAttachments = [...attachments];
-    updatedAttachments.splice(index, 1);
-    setAttachments(updatedAttachments);
+    setAttachments(prevAttachments => {
+      const updatedAttachments = [...prevAttachments];
+      updatedAttachments.splice(index, 1);
+      return updatedAttachments;
+    });
   };
 
   const toggleTicketForm = () => {
-    setTicketOpen(!ticketOpen);
+    setTicketOpen(prev => !prev);
     setTicketDetails(null);
   };
 
@@ -182,6 +201,7 @@ const fetchSubmittedTickets = async () => {
       {(ticketOpen || ticketDetails) && (
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2} mt={2}>
+            {/* Read-only fields */}
             <Grid item xs={12} md={6}>
               <FormControl fullWidth>
                 <InputLabel shrink>Name</InputLabel>

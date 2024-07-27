@@ -1,14 +1,23 @@
-// AppDevDashboard.jsx
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,useParams } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { collection, doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../../../utils/firebaseConfig';
-
+import { AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem, ListItemText, Hidden, useMediaQuery, createTheme, ThemeProvider, BottomNavigation, BottomNavigationAction, Box, CssBaseline, Button, Tooltip } from '@mui/material';
+import { Menu as MenuIcon, AccountCircle, Work, Article, AccountBalance, Help, ExitToApp } from '@mui/icons-material';
+import Logo from '../../../assets/1.png';
+import Ticket from './Features/Ticket';
 const AppDevDashboard = () => {
   const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [currentSection, setCurrentSection] = useState('profile');
+  const { userId } = useParams();
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
 
   const handleLogout = async () => {
     try {
@@ -48,47 +57,245 @@ const AppDevDashboard = () => {
     fetchUserData();
   }, [navigate]);
 
+  const theme = createTheme({
+    palette: {
+      primary: {
+        main: '#1976d2',
+      },
+      secondary: {
+        main: '#f44336',
+      },
+    },
+  });
+  const isMobileView = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const handleSectionChange = (section) => {
+    setCurrentSection(section);
+    if (isMobileView) {
+      setMobileOpen(false);
+    }
+  };
+
+  const drawer = (
+    <Box sx={{ width: 250 }}>
+      <List>
+        <ListItem
+          button
+          selected={currentSection === 'profile'}
+          onClick={() => handleSectionChange('profile')}
+        >
+          <ListItemText primary="Profile Details" />
+        </ListItem>
+        <ListItem
+          button
+          selected={currentSection === 'project'}
+          onClick={() => handleSectionChange('project')}
+        >
+          <ListItemText primary="Project Details" />
+        </ListItem>
+        <ListItem
+          button
+          selected={currentSection === 'help'}
+          onClick={() => handleSectionChange('help')}
+        >
+          <ListItemText primary="Help & Security" />
+        </ListItem>
+        <ListItem
+          button
+          selected={currentSection === 'security'}
+          onClick={() => handleSectionChange('security')}
+        >
+          <ListItemText primary="Security Details" />
+        </ListItem>
+        <ListItem
+          button
+          selected={currentSection === 'additional'}
+          onClick={() => handleSectionChange('additional')}
+        >
+          <ListItemText primary="Additional Details" />
+        </ListItem>
+      </List>
+    </Box>
+  );
+
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <p>Loading...</p>
-      </div>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <Typography>Loading...</Typography>
+      </Box>
     );
   }
 
-  const handleLinkClick = (url) => {
-    window.open(url, '_blank');
-  };
+  if (!userData) {
+    return (
+      <Box sx={{ maxWidth: 800, mx: 'auto', p: 3, bgcolor: 'background.paper', boxShadow: 3, borderRadius: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h4" component="h1">
+            Welcome to App Developer Dashboard!
+          </Typography>
+          <Button variant="contained" color="secondary" onClick={handleLogout}>
+            Logout
+          </Button>
+        </Box>
+        <Box sx={{ p: 2, bgcolor: 'background.default', border: 1, borderColor: 'divider', borderRadius: 1 }}>
+          <Typography variant="h6">User Data:</Typography>
+          <Typography>No user data found for App Developer.</Typography>
+        </Box>
+      </Box>
+    );
+  }
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px', backgroundColor: '#fff', boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)', borderRadius: '8px' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>Welcome to App Dev Dashboard!</h1>
-        <button
-          style={{
-            backgroundColor: '#f44336',
-            color: '#fff',
-            border: 'none',
-            padding: '10px 20px',
-            fontSize: '16px',
-            cursor: 'pointer',
-            borderRadius: '4px',
-            transition: 'background-color 0.3s ease',
-          }}
-          onClick={handleLogout}
-        >
-          Logout
-        </button>
-      </header>
-      <main style={{ padding: '20px', backgroundColor: '#f9f9f9', border: '1px solid #ddd', borderRadius: '4px' }}>
-        {userData && (
-          <div>
-            <h2>User Data: {userData.userId}</h2>
-            {/* Render other details as needed */}
-          </div>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Box sx={{ display: 'flex' }}>
+        <AppBar position="fixed" sx={{ zIndex: theme.zIndex.drawer + 1 }}>
+          <Toolbar>
+            {isMobileView && (
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                edge="start"
+                onClick={handleDrawerToggle}
+                sx={{ mr: 2 }}
+              >
+                <MenuIcon />
+              </IconButton>
+            )}
+              <img src={Logo} alt="Logo" style={{ marginRight: 8, width: 44, height: 44 }} />
+
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+              App Developer Dashboard
+            </Typography>
+            <Tooltip title="Logout">
+              <IconButton
+                color="inherit"
+                onClick={handleLogout}
+                sx={{ ml: 2 }}
+              >
+                <ExitToApp />
+              </IconButton>
+            </Tooltip>
+          </Toolbar>
+        </AppBar>
+
+        <Hidden smDown>
+          <Drawer
+            variant="permanent"
+            sx={{
+              width: 240,
+              flexShrink: 0,
+              [`& .MuiDrawer-paper`]: { width: 240, boxSizing: 'border-box' },
+            }}
+          >
+            <Toolbar />
+            {drawer}
+          </Drawer>
+        </Hidden>
+
+        {isMobileView && (
+          <Drawer
+            variant="temporary"
+            open={mobileOpen}
+            onClose={handleDrawerToggle}
+            ModalProps={{
+              keepMounted: true,
+            }}
+            sx={{
+              width: 240,
+              flexShrink: 0,
+              [`& .MuiDrawer-paper`]: { width: 240, boxSizing: 'border-box' },
+            }}
+          >
+            <Toolbar />
+            {drawer}
+          </Drawer>
         )}
-      </main>
-    </div>
+
+        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+          <Toolbar />
+          <Box sx={{ mt: 2 }}>
+            {currentSection === 'profile' && (
+              <>
+                <Typography variant="h5" gutterBottom>Profile Details</Typography>
+                <Box sx={{ bgcolor: 'background.paper', boxShadow: 1, borderRadius: 1, p: 3 }}>
+                  <Typography variant="subtitle1" gutterBottom><strong>Full Name:</strong> {userData.fullName}</Typography>
+                  <Typography variant="subtitle1" gutterBottom><strong>Email:</strong> {userData.email}</Typography>
+                  <Typography variant="subtitle1" gutterBottom><strong>Phone Number:</strong> {userData.phoneNumber}</Typography>
+                  <Typography variant="subtitle1" gutterBottom><strong>User ID:</strong> {userData.userId}</Typography>
+                  <Typography variant="subtitle1" gutterBottom><strong>User Type:</strong> {userData.userType}</Typography>
+                </Box>
+              </>
+            )}
+
+            {currentSection === 'project' && (
+              <>
+                <Typography variant="h5" gutterBottom>Project Details</Typography>
+                <Box sx={{ bgcolor: 'background.paper', boxShadow: 1, borderRadius: 1, p: 3 }}>
+                  <Typography variant="subtitle1" gutterBottom><strong>App Name:</strong> {userData.appName}</Typography>
+                  <Typography variant="subtitle1" gutterBottom><strong>Platform:</strong> {userData.platform}</Typography>
+                  <Typography variant="subtitle1" gutterBottom><strong>Version:</strong> {userData.version}</Typography>
+                  <Typography variant="subtitle1" gutterBottom><strong>Release Date:</strong> {userData.releaseDate}</Typography>
+                  <Typography variant="subtitle1" gutterBottom><strong>Status:</strong> {userData.status}</Typography>
+                </Box>
+              </>
+            )}
+
+            {currentSection === 'security' && (
+              <>
+                <Typography variant="h5" gutterBottom>Security Details</Typography>
+                <Box sx={{ bgcolor: 'background.paper', boxShadow: 1, borderRadius: 1, p: 3 }}>
+                  <Typography variant="subtitle1" gutterBottom><strong>Password:</strong> {userData.password}</Typography>
+                  <Typography variant="subtitle1" gutterBottom><strong>Confirm Password:</strong> {userData.confirmPassword}</Typography>
+                </Box>
+              </>
+            )}
+
+            {currentSection === 'additional' && (
+              <>
+                <Typography variant="h5" gutterBottom>Additional Details</Typography>
+                <Box sx={{ bgcolor: 'background.paper', boxShadow: 1, borderRadius: 1, p: 3 }}>
+                  <Typography variant="subtitle1" gutterBottom><strong>Description:</strong> {userData.description}</Typography>
+                  <Typography variant="subtitle1" gutterBottom><strong>Project Live Date:</strong> {userData.projectLiveDate}</Typography>
+                  <Typography variant="subtitle1" gutterBottom><strong>User Profile:</strong> {userData.userProfile}</Typography>
+
+                </Box>
+              </>
+            )}
+
+            {currentSection === 'help' && (
+              <>
+              <Typography variant="h5" gutterBottom>Help & Security</Typography>
+              <Box sx={{ bgcolor: 'background.paper', boxShadow: 1, borderRadius: 1, p: 3 }}>
+                <Ticket userId={auth.currentUser?.uid} />
+              </Box>
+            </>
+            )}
+          </Box>
+        </Box>
+
+        {isMobileView && (
+          <BottomNavigation
+            value={currentSection}
+            onChange={(event, newValue) => setCurrentSection(newValue)}
+            showLabels
+            sx={{
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              borderTop: `1px solid ${theme.palette.divider}`,
+            }}
+          >
+            <BottomNavigationAction label="Profile" value="profile" icon={<AccountCircle />} />
+            <BottomNavigationAction label="Project" value="project" icon={<Work />} />
+            <BottomNavigationAction label="Security" value="security" icon={<AccountBalance />} />
+            <BottomNavigationAction label="Help" value="help" icon={<Help />} />
+            <BottomNavigationAction label="Additional" value="additional" icon={<Article />} />
+          </BottomNavigation>
+        )}
+      </Box>
+    </ThemeProvider>
   );
 };
 

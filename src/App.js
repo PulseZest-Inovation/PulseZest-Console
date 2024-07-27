@@ -18,7 +18,7 @@ function App() {
         <Route path="/login" element={<LoginFormPage />} />
         <Route path="/db" element={<Db />} />
         <Route path="/admin-control" element={<AdminControl />} />
-        <Route path="/web-support" element={<EmployeeConsole />} />
+        <Route path="/employee-support" element={<EmployeeConsole />} />
         <Route path="/ticket/:ticketId" element={<ChatPage />} />
       </Routes>
     </Router>

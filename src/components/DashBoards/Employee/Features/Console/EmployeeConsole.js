@@ -1,32 +1,68 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { db } from '../../../../../utils/firebaseConfig'; // Adjust the path as per your setup
-import { collection, onSnapshot, updateDoc, doc } from 'firebase/firestore';
+import { db, auth } from '../../../../../utils/firebaseConfig'; // Adjust the path as per your setup
+import { collection, onSnapshot, updateDoc, doc, query, where, getDoc } from 'firebase/firestore';
 import { Card, CardContent, Typography, Button, Container, Grid } from '@mui/material';
 import { useMediaQuery } from '@mui/material';
+import { getAuth } from 'firebase/auth';
+
+const departmentMappings = {
+  "Web Developer": "WebDevelopment",
+  "Android Developer": "AppDevelopment",
+  // Add more mappings as needed
+};
 
 const EmployeeConsole = ({ isStaff }) => {
   const [tickets, setTickets] = useState([]);
+  const [employeeDepartment, setEmployeeDepartment] = useState('');
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width:600px)');
+  const auth = getAuth(); // Firebase Auth instance
 
   useEffect(() => {
-    const ticketsCollectionRef = collection(db, 'tickets');
-    
-    // Setting up a real-time listener
-    const unsubscribe = onSnapshot(ticketsCollectionRef, (snapshot) => {
-      const ticketsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setTickets(ticketsData);
-    }, (error) => {
-      console.error('Error fetching tickets:', error);
-    });
+    const fetchUserDepartment = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        try {
+          const employeeDocRef = doc(db, 'employeeDetails', user.uid);
+          const employeeDoc = await getDoc(employeeDocRef);
+          if (employeeDoc.exists()) {
+            const employeeData = employeeDoc.data();
+            const department = employeeData.department ? employeeData.department[0] : ''; // Assuming department is an array
+            // Set the department based on the mapping or use an empty string if not found
+            setEmployeeDepartment(departmentMappings[department] || '');
+            console.log('Employee department:', departmentMappings[department] || '');
+          }
+        } catch (error) {
+          console.error('Error fetching user department:', error);
+        }
+      }
+    };
 
-    // Cleanup the subscription on component unmount
-    return () => unsubscribe();
-  }, []);
+    fetchUserDepartment();
+  }, [auth]);
+
+  useEffect(() => {
+    if (employeeDepartment) {
+      const ticketsCollectionRef = collection(db, 'tickets');
+      // Create a query to match tickets where the department field equals the employee's department
+      const q = query(ticketsCollectionRef, where('department', '==', employeeDepartment));
+
+      // Setting up a real-time listener
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const ticketsData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setTickets(ticketsData);
+      }, (error) => {
+        console.error('Error fetching tickets:', error);
+      });
+
+      // Cleanup the subscription on component unmount
+      return () => unsubscribe();
+    }
+  }, [employeeDepartment]);
 
   const handleChat = async (ticketId) => {
     try {

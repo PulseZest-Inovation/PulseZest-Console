@@ -158,7 +158,9 @@ const EmployeeDashboard = () => {
 
   const handleDepartmentClick = (dept) => {
     if (dept === 'Web Developer') {
-      navigate('/web-support');
+      navigate('/employee-support');
+    } else if (dept === 'Android Developer') {
+      navigate('/employee-support');
     } else {
       console.log(`Clicked department: ${dept}`);
     }
