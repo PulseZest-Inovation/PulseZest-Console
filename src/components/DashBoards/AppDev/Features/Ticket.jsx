@@ -141,6 +141,16 @@ const Ticket = ({ userId }) => {
 
     try {
       await setDoc(ticketRef, ticketData);
+  
+      // Send ticket data to the server
+      await fetch('http://localhost:5000/api/submit-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(ticketData),
+      });
+  
       toast.success("Ticket submitted successfully!");
       setSubject("");
       setRelatedService("None");

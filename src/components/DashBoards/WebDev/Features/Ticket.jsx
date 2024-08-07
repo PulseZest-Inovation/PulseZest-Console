@@ -82,63 +82,73 @@ const fetchSubmittedTickets = async () => {
 };
 
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setLoading(true); // Show loader while submitting
+const handleSubmit = async (event) => {
+  event.preventDefault();
+  setLoading(true); // Show loader while submitting
 
-    // Generate a random 6-digit ID for the ticket
-    const ticketId = Math.floor(100000 + Math.random() * 900000);
+  // Generate a random 6-digit ID for the ticket
+  const ticketId = Math.floor(100000 + Math.random() * 900000);
 
-    // Upload attachments to Firebase Storage
-    const storage = getStorage();
-    const attachmentUrls = [];
+  // Upload attachments to Firebase Storage
+  const storage = getStorage();
+  const attachmentUrls = [];
 
-    try {
-      for (const file of attachments) {
-        const storageRef = ref(storage, `attachments/${ticketId}/${file.name}`);
-        await uploadBytes(storageRef, file);
-        const downloadUrl = await getDownloadURL(storageRef);
-        attachmentUrls.push({ name: file.name, url: downloadUrl });
-      }
-    } catch (error) {
-      console.error("Error uploading attachments:", error);
-      setLoading(false); // Hide loader on error
-      return;
+  try {
+    for (const file of attachments) {
+      const storageRef = ref(storage, `attachments/${ticketId}/${file.name}`);
+      await uploadBytes(storageRef, file);
+      const downloadUrl = await getDownloadURL(storageRef);
+      attachmentUrls.push({ name: file.name, url: downloadUrl });
     }
+  } catch (error) {
+    console.error("Error uploading attachments:", error);
+    setLoading(false); // Hide loader on error
+    return;
+  }
 
-    // Save ticket details to Firebase Firestore
-    const firestore = getFirestore();
-    const ticketRef = doc(firestore, 'tickets', `${ticketId}`);
-    const ticketData = {
-      fullName,
-      email,
-      subject,
-      department,
-      relatedService,
-      priority,
-      message,
-      attachments: attachmentUrls,
-      status: "Open",
-      ticketId
-    };
-
-    try {
-      await setDoc(ticketRef, ticketData);
-      toast.success("Ticket submitted successfully!");
-      setSubject("");
-      setRelatedService("None");
-      setPriority("Medium");
-      setMessage("");
-      setAttachments([]);
-      setTicketDetails(ticketData);
-      setSubmittedTickets([...submittedTickets, ticketData]);
-      setLoading(false); // Hide loader on success
-      setTicketOpen(false); // Close ticket form after submission
-    } catch (error) {
-      console.error("Error adding document:", error);
-      setLoading(false); // Hide loader on error
-    }
+  // Save ticket details to Firebase Firestore
+  const firestore = getFirestore();
+  const ticketRef = doc(firestore, 'tickets', `${ticketId}`);
+  const ticketData = {
+    fullName,
+    email,
+    subject,
+    department,
+    relatedService,
+    priority,
+    message,
+    attachments: attachmentUrls,
+    status: "Open",
+    ticketId
   };
+
+  try {
+    await setDoc(ticketRef, ticketData);
+
+    // Send ticket data to the server
+    await fetch('http://localhost:5000/api/submit-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(ticketData),
+    });
+
+    toast.success("Ticket submitted successfully!");
+    setSubject("");
+    setRelatedService("None");
+    setPriority("Medium");
+    setMessage("");
+    setAttachments([]);
+    setTicketDetails(ticketData);
+    setSubmittedTickets([...submittedTickets, ticketData]);
+    setLoading(false); // Hide loader on success
+    setTicketOpen(false); // Close ticket form after submission
+  } catch (error) {
+    console.error("Error adding document or submitting email:", error);
+    setLoading(false); // Hide loader on error
+  }
+};
 
   const handleAttachmentChange = (event) => {
     const files = event.target.files;
