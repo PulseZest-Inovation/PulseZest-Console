@@ -143,7 +143,7 @@ const Ticket = ({ userId }) => {
       await setDoc(ticketRef, ticketData);
   
       // Send ticket data to the server
-      await fetch('http://localhost:5000/api/submit-email', {
+      await fetch('https://client-support.pulsezest.com/api/submit-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
