@@ -7,7 +7,7 @@ import AttachFileIcon from '@mui/icons-material/AttachFile';
 import ClearIcon from '@mui/icons-material/Clear';
 import { Typography, Paper, Grid, Chip, IconButton, FormControl, InputLabel, TextField, Select, MenuItem, Button, Box, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
 import { db } from '../../../../utils/firebaseConfig'; // Adjust path as per your project structure
-import { useNavigate } from 'react-router-dom'; // Import useNavigate from react-router-dom
+import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -24,27 +24,22 @@ const Ticket = ({ userId }) => {
   const [ticketDetails, setTicketDetails] = useState(null);
   const [submittedTickets, setSubmittedTickets] = useState([]);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate();
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const firestore = getFirestore();
-      const userRef = doc(firestore, "webDevelopment", userId);
-
       try {
+        const userRef = doc(getFirestore(), "webDevelopment", userId);
         const docSnap = await getDoc(userRef);
         if (docSnap.exists()) {
           const userData = docSnap.data();
           setFullName(userData.fullName);
           setEmail(userData.email);
-          if (userData.userType === "webDev") {
-            setDepartment("WebDevelopment");
-          } else {
-            setDepartment(userData.department || "");
-          }
+          setDepartment(userData.userType === "webDev" ? "WebDevelopment" : userData.department || "");
+          fetchSubmittedTickets(userData.department || ""); // Fetch tickets after setting the department
         } else {
           console.error("No such document!");
         }
@@ -54,101 +49,81 @@ const Ticket = ({ userId }) => {
     };
 
     fetchUserData();
-    fetchSubmittedTickets();
+  }, [userId]);
 
-   // Fetch tickets every 60 seconds only if department is set
-   if (department) {
-    fetchSubmittedTickets();
-    const interval = setInterval(() => {
-      fetchSubmittedTickets();
-    }, 60000);
-    return () => clearInterval(interval);
-  }
-}, [userId, department]);
+  const fetchSubmittedTickets = async (dept) => {
+    if (!dept) return;
 
-const fetchSubmittedTickets = async () => {
-  const firestore = getFirestore();
-  const ticketsCollectionRef = collection(firestore, 'tickets');
-
-  try {
-    const snapshot = await getDocs(ticketsCollectionRef);
-    const tickets = snapshot.docs.map(doc => doc.data());
-    // Filter tickets by department
-    const filteredTickets = tickets.filter(ticket => ticket.department === department);
-    setSubmittedTickets(filteredTickets);
-  } catch (error) {
-    console.error("Error fetching tickets:", error);
-  }
-};
-
-
-const handleSubmit = async (event) => {
-  event.preventDefault();
-  setLoading(true); // Show loader while submitting
-
-  // Generate a random 6-digit ID for the ticket
-  const ticketId = Math.floor(100000 + Math.random() * 900000);
-
-  // Upload attachments to Firebase Storage
-  const storage = getStorage();
-  const attachmentUrls = [];
-
-  try {
-    for (const file of attachments) {
-      const storageRef = ref(storage, `attachments/${ticketId}/${file.name}`);
-      await uploadBytes(storageRef, file);
-      const downloadUrl = await getDownloadURL(storageRef);
-      attachmentUrls.push({ name: file.name, url: downloadUrl });
+    try {
+      const ticketsCollectionRef = collection(getFirestore(), 'tickets');
+      const snapshot = await getDocs(ticketsCollectionRef);
+      const tickets = snapshot.docs.map(doc => doc.data());
+      const filteredTickets = tickets.filter(ticket => ticket.department === dept);
+      setSubmittedTickets(filteredTickets);
+    } catch (error) {
+      console.error("Error fetching tickets:", error);
     }
-  } catch (error) {
-    console.error("Error uploading attachments:", error);
-    setLoading(false); // Hide loader on error
-    return;
-  }
-
-  // Save ticket details to Firebase Firestore
-  const firestore = getFirestore();
-  const ticketRef = doc(firestore, 'tickets', `${ticketId}`);
-  const ticketData = {
-    fullName,
-    email,
-    subject,
-    department,
-    relatedService,
-    priority,
-    message,
-    attachments: attachmentUrls,
-    status: "Open",
-    ticketId
   };
 
-  try {
-    await setDoc(ticketRef, ticketData);
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setLoading(true);
 
-    // Send ticket data to the server
-    await fetch('https://client-support.pulsezest.com/api/submit-email', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(ticketData),
-    });
+    const ticketId = Math.floor(100000 + Math.random() * 900000);
+    const storage = getStorage();
+    const attachmentUrls = [];
 
-    toast.success("Ticket submitted successfully!");
-    setSubject("");
-    setRelatedService("None");
-    setPriority("Medium");
-    setMessage("");
-    setAttachments([]);
-    setTicketDetails(ticketData);
-    setSubmittedTickets([...submittedTickets, ticketData]);
-    setLoading(false); // Hide loader on success
-    setTicketOpen(false); // Close ticket form after submission
-  } catch (error) {
-    console.error("Error adding document or submitting email:", error);
-    setLoading(false); // Hide loader on error
-  }
-};
+    try {
+      for (const file of attachments) {
+        const storageRef = ref(storage, `attachments/${ticketId}/${file.name}`);
+        await uploadBytes(storageRef, file);
+        const downloadUrl = await getDownloadURL(storageRef);
+        attachmentUrls.push({ name: file.name, url: downloadUrl });
+      }
+    } catch (error) {
+      console.error("Error uploading attachments:", error);
+      setLoading(false);
+      return;
+    }
+
+    const ticketData = {
+      fullName,
+      email,
+      subject,
+      department,
+      relatedService,
+      priority,
+      message,
+      attachments: attachmentUrls,
+      status: "Open",
+      ticketId,
+    };
+
+    try {
+      await setDoc(doc(getFirestore(), 'tickets', `${ticketId}`), ticketData);
+
+      // Send ticket data to the server
+      await fetch('https://client-support.pulsezest.com/api/submit-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(ticketData),
+      });
+
+      toast.success("Ticket submitted successfully!");
+      setSubject("");
+      setRelatedService("None");
+      setPriority("Medium");
+      setMessage("");
+      setAttachments([]);
+      setTicketDetails(ticketData);
+      setSubmittedTickets([...submittedTickets, ticketData]);
+      setLoading(false);
+      setTicketOpen(false);
+    } catch (error) {
+      console.error("Error adding document or submitting email:", error);
+      setLoading(false);
+    }
+  };
 
   const handleAttachmentChange = (event) => {
     const files = event.target.files;

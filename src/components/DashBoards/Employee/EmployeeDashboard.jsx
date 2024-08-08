@@ -257,6 +257,8 @@ const EmployeeDashboard = () => {
             </Typography>
           )}
           <ZodCountDisplay userId={auth.currentUser.uid} /> {/* Pass userId here */}
+
+          <h1>hee</h1>
         </Section>
 
         );

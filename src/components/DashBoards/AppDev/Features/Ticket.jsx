@@ -1,27 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { doc, setDoc, getFirestore, collection, getDocs, getDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import ClearIcon from '@mui/icons-material/Clear';
-import {
-  Typography,
-  Paper,
-  Grid,
-  Chip,
-  IconButton,
-  FormControl,
-  InputLabel,
-  TextField,
-  Select,
-  MenuItem,
-  Button,
-  Box,
-  CircularProgress,
-  useMediaQuery,
-  useTheme
-} from '@mui/material';
+import {Typography,Paper,Grid,Chip,IconButton,FormControl,InputLabel,TextField,Select,MenuItem,Button,Box,CircularProgress,useMediaQuery,useTheme} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -44,6 +28,7 @@ const Ticket = ({ userId }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+  // Fetch user data only once when the component mounts
   useEffect(() => {
     const fetchUserData = async () => {
       if (!userId) {
@@ -74,15 +59,14 @@ const Ticket = ({ userId }) => {
     };
 
     fetchUserData();
-    // Fetch tickets every 60 seconds only if department is set
+  }, [userId]);
+
+  // Fetch tickets only when the department changes
+  useEffect(() => {
     if (department) {
       fetchSubmittedTickets();
-      const interval = setInterval(() => {
-        fetchSubmittedTickets();
-      }, 60000);
-      return () => clearInterval(interval);
     }
-  }, [userId, department]);
+  }, [department]);
 
   const fetchSubmittedTickets = async () => {
     const firestore = getFirestore();
