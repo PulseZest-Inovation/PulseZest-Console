@@ -3,7 +3,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { collection, doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../../../../utils/firebaseConfig';
-import { AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem, ListItemText, Hidden, useMediaQuery, createTheme, ThemeProvider, BottomNavigation, BottomNavigationAction, Box, CssBaseline, Button, Tooltip } from '@mui/material';
+import {
+  AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem, ListItemText, Hidden, useMediaQuery,
+  createTheme, ThemeProvider, BottomNavigation, BottomNavigationAction, Box, CssBaseline, Button, Tooltip
+} from '@mui/material';
 import { Menu as MenuIcon, AccountCircle, Work, Article, AccountBalance, Help, ExitToApp } from '@mui/icons-material';
 import Ticket from "./Ticket";
 import Logo from '../../../../assets/1.png';
@@ -67,12 +70,13 @@ const WebDevDetails = () => {
       },
     },
   });
-  const isMobileView = useMediaQuery(theme.breakpoints.down('sm')); // Detect mobile view
+
+  const isMobileView = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleSectionChange = (section) => {
     setCurrentSection(section);
     if (isMobileView) {
-      setMobileOpen(false); // Close sidebar on mobile after selecting a section
+      setMobileOpen(false);
     }
   };
 
@@ -130,7 +134,7 @@ const WebDevDetails = () => {
     return (
       <Box sx={{ maxWidth: 800, mx: 'auto', p: 3, bgcolor: 'background.paper', boxShadow: 3, borderRadius: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <img src={Logo} alt="Logo" style={{ marginRight: 8, width: 44, height: 44 }} />
+          <img src={Logo} alt="Logo" style={{ marginRight: 8, width: 44, height: 44 }} />
           <Typography variant="h4" component="h1">
             Welcome to Web Developer Dashboard!
           </Typography>
@@ -163,8 +167,7 @@ const WebDevDetails = () => {
                 <MenuIcon />
               </IconButton>
             )}
-                    <img src={Logo} alt="Logo" style={{ marginRight: 8, width: 44, height: 44 }} />
-
+            <img src={Logo} alt="Logo" style={{ marginRight: 8, width: 44, height: 44 }} />
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               Web Developer Dashboard
             </Typography>
@@ -180,7 +183,6 @@ const WebDevDetails = () => {
           </Toolbar>
         </AppBar>
 
-        {/* Desktop Sidebar */}
         <Hidden smDown>
           <Drawer
             variant="permanent"
@@ -195,14 +197,13 @@ const WebDevDetails = () => {
           </Drawer>
         </Hidden>
 
-        {/* Mobile Sidebar */}
         {isMobileView && (
           <Drawer
             variant="temporary"
             open={mobileOpen}
             onClose={handleDrawerToggle}
             ModalProps={{
-              keepMounted: true, // Better open performance on mobile.
+              keepMounted: true,
             }}
             sx={{
               width: 240,
@@ -279,7 +280,6 @@ const WebDevDetails = () => {
           </Box>
         </Box>
 
-        {/* Bottom Navigation for Mobile */}
         {isMobileView && (
           <BottomNavigation
             value={currentSection}

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { doc, setDoc, getFirestore, collection, getDocs, getDoc } from 'firebase/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { doc, setDoc, collection, getDocs, getDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import ClearIcon from '@mui/icons-material/Clear';
 import { Typography, Paper, Grid, Chip, IconButton, FormControl, InputLabel, TextField, Select, MenuItem, Button, Box, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
-import { db } from '../../../../utils/firebaseConfig'; // Adjust path as per your project structure
+import { db, storage } from '../../../../utils/firebaseConfig'; // Adjust path as per your project structure
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -32,14 +32,13 @@ const Ticket = ({ userId }) => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const userRef = doc(getFirestore(), "webDevelopment", userId);
+        const userRef = doc(db, "webDevelopment", userId);
         const docSnap = await getDoc(userRef);
         if (docSnap.exists()) {
           const userData = docSnap.data();
           setFullName(userData.fullName);
           setEmail(userData.email);
           setDepartment(userData.userType === "webDev" ? "WebDevelopment" : userData.department || "");
-          fetchSubmittedTickets(userData.department || ""); // Fetch tickets after setting the department
         } else {
           console.error("No such document!");
         }
@@ -48,20 +47,35 @@ const Ticket = ({ userId }) => {
       }
     };
 
-    fetchUserData();
+    if (userId) {
+      fetchUserData();
+    }
   }, [userId]);
+
+  useEffect(() => {
+    if (department) {
+      fetchSubmittedTickets(department);
+    }
+  }, [department]);
 
   const fetchSubmittedTickets = async (dept) => {
     if (!dept) return;
 
     try {
-      const ticketsCollectionRef = collection(getFirestore(), 'tickets');
+      const ticketsCollectionRef = collection(db, 'tickets');
       const snapshot = await getDocs(ticketsCollectionRef);
-      const tickets = snapshot.docs.map(doc => doc.data());
+
+      if (snapshot.empty) {
+        console.log('No tickets found in Firestore.');
+        setSubmittedTickets([]);
+        return;
+      }
+
+      const tickets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       const filteredTickets = tickets.filter(ticket => ticket.department === dept);
       setSubmittedTickets(filteredTickets);
     } catch (error) {
-      console.error("Error fetching tickets:", error);
+      console.error('Error fetching tickets:', error);
     }
   };
 
@@ -70,7 +84,6 @@ const Ticket = ({ userId }) => {
     setLoading(true);
 
     const ticketId = Math.floor(100000 + Math.random() * 900000);
-    const storage = getStorage();
     const attachmentUrls = [];
 
     try {
@@ -100,10 +113,9 @@ const Ticket = ({ userId }) => {
     };
 
     try {
-      await setDoc(doc(getFirestore(), 'tickets', `${ticketId}`), ticketData);
+      await setDoc(doc(db, 'tickets', `${ticketId}`), ticketData);
 
-      // Send ticket data to the server
-      await fetch('https://client-support.pulsezest.com/api/submit-email', {
+      await fetch('https://email-client-api-ten.vercel.app/api/submit-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(ticketData),
@@ -171,6 +183,7 @@ const Ticket = ({ userId }) => {
               <FormControl fullWidth>
                 <InputLabel shrink>Name</InputLabel>
                 <TextField
+                  id="name"
                   value={fullName}
                   InputProps={{ readOnly: true }}
                   variant="outlined"
@@ -182,6 +195,7 @@ const Ticket = ({ userId }) => {
               <FormControl fullWidth>
                 <InputLabel shrink>Email Address</InputLabel>
                 <TextField
+                  id="email"
                   value={email}
                   InputProps={{ readOnly: true }}
                   variant="outlined"
@@ -202,6 +216,7 @@ const Ticket = ({ userId }) => {
               <FormControl fullWidth>
                 <InputLabel shrink>Department</InputLabel>
                 <TextField
+                  id="department"
                   value={department}
                   InputProps={{ readOnly: true }}
                   variant="outlined"
