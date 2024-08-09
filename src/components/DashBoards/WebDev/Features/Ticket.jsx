@@ -115,7 +115,7 @@ const Ticket = ({ userId }) => {
     try {
       await setDoc(doc(db, 'tickets', `${ticketId}`), ticketData);
 
-      await fetch('https://email-client-api-ten.vercel.app/api/submit-email', {
+      await fetch('https://pz-api-system.pulsezest.com/api/submit-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(ticketData),
