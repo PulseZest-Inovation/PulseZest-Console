@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { getAuth } from 'firebase/auth';
-import { db } from '../../../../../utils/firebaseConfig'; // Ensure the path is correct
+import { db } from '../../../../../utils/firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
 
-// Define color palettes for each category
 const colorPalettes = {
   Web: ['#FF5733', '#33FF57', '#3357FF', '#F733FF', '#FF33A1', '#33FFC7', '#F7FF33', '#FF9C33', '#33FF9C', '#9C33FF'],
   App: ['#FF5733', '#FF9C33', '#F7FF33', '#33FF57', '#33FFC7', '#3357FF', '#FF33A1', '#9C33FF', '#33FF9C', '#F733FF'],
   Server: ['#33D4FF', '#D4FF33', '#FF5733', '#33FF57', '#3357FF', '#F733FF', '#FF33A1', '#33FFC7', '#F7FF33', '#FF9C33']
 };
 
-// Function to get a distinct color from the palette based on category
 const getDistinctColor = (category, index) => {
   return colorPalettes[category][index % colorPalettes[category].length];
 };
@@ -80,16 +78,16 @@ const Role = () => {
     flexDirection: 'column',
     alignItems: 'center',
     padding: '20px',
-    backgroundColor: '#ffffff', // White background
+    backgroundColor: '#ffffff',
     minHeight: '100vh',
-    color: '#3627fe  ',
+    color: '#3627fe',
   };
 
   const categoriesContainerStyle = {
     display: 'flex',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    gap: '530px',
+    gap: '20px', // Adjust gap for smaller screens
   };
 
   const categoryStyle = {
@@ -119,10 +117,10 @@ const Role = () => {
     color: '#000',
     padding: '5px 15px',
     borderRadius: '20px',
-    fontSize: '24px',
+    fontSize: '20px',
     fontWeight: 'bold',
     textTransform: 'capitalize',
-    whiteSpace: 'nowrap', // Prevent text from wrapping
+    whiteSpace: 'nowrap',
     position: 'relative',
   });
 

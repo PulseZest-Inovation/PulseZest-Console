@@ -174,9 +174,53 @@ const ChatPage = () => {
   };
 
   const toggleChatClosed = async () => {
-    setChatClosed(!chatClosed);
-    await updateDoc(doc(db, 'tickets', ticketId), { chatClosed: !chatClosed });
+    try {
+      // Fetch chat details from Firestore
+      const ticketDocRef = doc(db, 'tickets', ticketId);
+      const ticketDocSnapshot = await getDoc(ticketDocRef);
+  
+      if (ticketDocSnapshot.exists()) {
+        const ticketData = ticketDocSnapshot.data();
+        const {
+          email,
+          message,
+          priority,
+          relatedService,
+          subject,
+        } = ticketData;
+  
+        // Prepare the data to send to the API
+        const apiData = {
+          ticketId,
+          email,
+          subject,
+          priority,
+          relatedService,
+          message,
+        };
+  
+        // Send the data to the API
+        const response = await fetch('http://localhost:8000/api/close-chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(apiData),
+        });
+  
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+  
+        // Update the Firestore document to close the chat
+        await updateDoc(ticketDocRef, { chatClosed: true });
+        setChatClosed(true);
+      } else {
+        console.error('Ticket document not found');
+      }
+    } catch (error) {
+      console.error('Error closing chat:', error);
+    }
   };
+  
 
   return (
     <ThemeProvider theme={theme}>
