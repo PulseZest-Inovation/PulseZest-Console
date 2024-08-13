@@ -200,7 +200,7 @@ const ChatPage = () => {
         };
   
         // Send the data to the API
-        const response = await fetch('http://localhost:8000/api/close-chat', {
+        const response = await fetch('https://pz-api-system.pulsezest.com/api/close-chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(apiData),
