@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
-import { db, storage } from '../utils/firebaseConfig';
+import { db, storage, auth } from '../utils/firebaseConfig'; // Import auth from firebase config
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Typography, Container, TextField, Button, List, ListItem, Box, IconButton, AppBar, Toolbar, CssBaseline, Switch, Avatar, createTheme, ThemeProvider, Dialog, DialogContent, CircularProgress } from '@mui/material';
@@ -23,12 +23,31 @@ const ChatPage = () => {
   const [openImageDialog, setOpenImageDialog] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const [chatClosed, setChatClosed] = useState(false); // New state for chat closed
+  const [isClient, setIsClient] = useState(false); // New state to check if the user is a client
 
   const theme = createTheme({
     palette: {
       mode: darkMode ? 'dark' : 'light',
     },
   });
+
+  useEffect(() => {
+    const checkClientStatus = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+      const { uid } = user;
+      const appDevDoc = await getDoc(doc(db, 'appDevelopment', uid));
+      const webDevDoc = await getDoc(doc(db, 'webDevelopment', uid));
+
+      if (appDevDoc.exists() || webDevDoc.exists()) {
+        setIsClient(true);
+      } else {
+        setIsClient(false);
+      }
+    };
+
+    checkClientStatus();
+  }, []);
 
   useEffect(() => {
     const fetchChatStatus = async () => {
@@ -232,7 +251,7 @@ const ChatPage = () => {
             Chat for Ticket ID: {ticketId}
           </Typography>
           <Switch checked={darkMode} onChange={handleModeChange} icon={<Brightness7 />} checkedIcon={<Brightness4 />} />
-          {!chatClosed && (
+          {!isClient && !chatClosed && (
             <Button variant="contained" color="secondary" onClick={toggleChatClosed} startIcon={<Close />}>
               Close Chat
             </Button>
