@@ -5,6 +5,7 @@ import Db from './pages/dbPage';
 import AdminControl from './components/DashBoards/AdminControls/adminControl';
 import EmployeeConsole from './components/DashBoards/Employee/Features/Console/EmployeeConsole';
 import ChatPage from './pages/ChatPage'; // Import the ChatPage component
+import IframePage from './pages/iframe'; // Adjust path as necessary
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -18,6 +19,8 @@ function App() {
         <Route path="/login" element={<LoginFormPage />} />
         <Route path="/db" element={<Db />} />
         <Route path="/admin-control" element={<AdminControl />} />
+        <Route path="/db/project-management" element={<IframePage />} />
+
         <Route path="/employee-support" element={<EmployeeConsole />} />
         <Route path="/ticket/:ticketId" element={<ChatPage />} />
       </Routes>

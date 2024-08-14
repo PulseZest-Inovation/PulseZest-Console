@@ -258,16 +258,7 @@ const WebDevDetails = () => {
             
             <ActionButtons domain={userData.domain} adminDomain={userData.adminDomain} />
             
-            {/* Iframe for editing */}
-            <Box sx={{ mt: 3 }}>
-              <iframe
-                id="adminIframe"
-                title="Admin Domain"
-                width="100%"
-                height="500px"
-                style={{ border: 'none' }}
-              ></iframe>
-            </Box>
+          
           </>
             )}
 
