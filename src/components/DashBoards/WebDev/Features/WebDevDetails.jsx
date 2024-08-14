@@ -10,6 +10,8 @@ import {
 import { Menu as MenuIcon, AccountCircle, Work, Article, AccountBalance, Help, ExitToApp } from '@mui/icons-material';
 import Ticket from "./Ticket";
 import Logo from '../../../../assets/1.png';
+import ActionButtons from './buttons/page';
+
 
 const WebDevDetails = () => {
   const navigate = useNavigate();
@@ -19,9 +21,12 @@ const WebDevDetails = () => {
   const [currentSection, setCurrentSection] = useState('profile');
   const { userId } = useParams();
 
+
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
+
+ 
 
   const handleLogout = async () => {
     try {
@@ -169,7 +174,7 @@ const WebDevDetails = () => {
             )}
             <img src={Logo} alt="Logo" style={{ marginRight: 8, width: 44, height: 44 }} />
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              Web Developer Dashboard
+            {userData.fullName} Dashboard
             </Typography>
             <Tooltip title="Logout">
               <IconButton
@@ -228,24 +233,42 @@ const WebDevDetails = () => {
                   <Typography variant="subtitle1" gutterBottom><strong>Phone Number:</strong> {userData.phoneNumber}</Typography>
                   <Typography variant="subtitle1" gutterBottom><strong>User ID:</strong> {userData.userId}</Typography>
                   <Typography variant="subtitle1" gutterBottom><strong>User Type:</strong> {userData.userType}</Typography>
+             
+                  
                 </Box>
+
+               
+
               </>
             )}
 
             {currentSection === 'project' && (
-              <>
-                <Typography variant="h5" gutterBottom>Project Details</Typography>
-                <Box sx={{ bgcolor: 'background.paper', boxShadow: 1, borderRadius: 1, p: 3 }}>
-                  <Typography variant="subtitle1" gutterBottom><strong>Website Name:</strong> {userData.websiteName}</Typography>
-                  <Typography variant="subtitle1" gutterBottom><strong>Custom Domain:</strong> {userData.customDomain}</Typography>
-                  <Typography variant="subtitle1" gutterBottom><strong>Domain:</strong> {userData.domain}</Typography>
-                  <Typography variant="subtitle1" gutterBottom><strong>Host:</strong> {userData.host}</Typography>
-                  <Typography variant="subtitle1" gutterBottom><strong>Project Live:</strong> {userData.projectLive ? 'Yes' : 'No'}</Typography>
-                  <Typography variant="subtitle1" gutterBottom><strong>Registration Date:</strong> {userData.registrationDate}</Typography>
-                  <Typography variant="subtitle1" gutterBottom><strong>Purpose:</strong> {userData.purpose}</Typography>
-                  <Typography variant="subtitle1" gutterBottom><strong>Reference:</strong> {userData.reference}</Typography>
-                </Box>
-              </>
+            <>
+            <Typography variant="h5" gutterBottom>Project Details</Typography>
+            <Box sx={{ bgcolor: 'background.paper', boxShadow: 1, borderRadius: 1, p: 3 }}>
+              <Typography variant="subtitle1" gutterBottom><strong>Website Name:</strong> {userData.websiteName}</Typography>
+              <Typography variant="subtitle1" gutterBottom><strong>Admin Domain:</strong> {userData.adminDomain}</Typography>
+              <Typography variant="subtitle1" gutterBottom><strong>Domain:</strong> {userData.domain}</Typography>
+              <Typography variant="subtitle1" gutterBottom><strong>Host:</strong> {userData.host}</Typography>
+              <Typography variant="subtitle1" gutterBottom><strong>Project Live:</strong> {userData.projectLive ? 'Yes' : 'No'}</Typography>
+              <Typography variant="subtitle1" gutterBottom><strong>Registration Date:</strong> {userData.registrationDate}</Typography>
+              <Typography variant="subtitle1" gutterBottom><strong>Purpose:</strong> {userData.purpose}</Typography>
+              <Typography variant="subtitle1" gutterBottom><strong>Reference:</strong> {userData.reference}</Typography>
+            </Box>
+            
+            <ActionButtons domain={userData.domain} adminDomain={userData.adminDomain} />
+            
+            {/* Iframe for editing */}
+            <Box sx={{ mt: 3 }}>
+              <iframe
+                id="adminIframe"
+                title="Admin Domain"
+                width="100%"
+                height="500px"
+                style={{ border: 'none' }}
+              ></iframe>
+            </Box>
+          </>
             )}
 
             {currentSection === 'security' && (

@@ -131,7 +131,7 @@ const AppDevDashboard = () => {
       <Box sx={{ maxWidth: 800, mx: 'auto', p: 3, bgcolor: 'background.paper', boxShadow: 3, borderRadius: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h4" component="h1">
-            Welcome to App Developer Dashboard!
+          {userData.fullName} Dashboard Dashboard!
           </Typography>
           <Button variant="contained" color="secondary" onClick={handleLogout}>
             Logout

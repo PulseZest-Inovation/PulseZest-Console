@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { doc, setDoc, getFirestore, collection, getDocs, getDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import {db} from '../../../../utils/firebaseConfig';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
@@ -68,18 +69,24 @@ const Ticket = ({ userId }) => {
     }
   }, [department]);
 
-  const fetchSubmittedTickets = async () => {
-    const firestore = getFirestore();
-    const ticketsCollectionRef = collection(firestore, 'tickets');
+  const fetchSubmittedTickets = async (dept) => {
+    if (!dept) return;
 
     try {
+      const ticketsCollectionRef = collection(db, 'tickets');
       const snapshot = await getDocs(ticketsCollectionRef);
-      const tickets = snapshot.docs.map(doc => doc.data());
-      // Filter tickets by department
-      const filteredTickets = tickets.filter(ticket => ticket.department === department);
+
+      if (snapshot.empty) {
+        console.log('No tickets found in Firestore.');
+        setSubmittedTickets([]);
+        return;
+      }
+
+      const tickets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const filteredTickets = tickets.filter(ticket => ticket.department === dept && ticket.userId === userId);
       setSubmittedTickets(filteredTickets);
     } catch (error) {
-      console.error("Error fetching tickets:", error);
+      console.error('Error fetching tickets:', error);
     }
   };
 
@@ -111,6 +118,7 @@ const Ticket = ({ userId }) => {
     const firestore = getFirestore();
     const ticketRef = doc(firestore, 'tickets', `${ticketId}`);
     const ticketData = {
+      userId,
       fullName,
       email,
       subject,

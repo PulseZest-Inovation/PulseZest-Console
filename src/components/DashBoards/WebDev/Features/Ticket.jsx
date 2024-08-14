@@ -72,7 +72,7 @@ const Ticket = ({ userId }) => {
       }
 
       const tickets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      const filteredTickets = tickets.filter(ticket => ticket.department === dept);
+      const filteredTickets = tickets.filter(ticket => ticket.department === dept && ticket.userId === userId);
       setSubmittedTickets(filteredTickets);
     } catch (error) {
       console.error('Error fetching tickets:', error);
@@ -100,6 +100,7 @@ const Ticket = ({ userId }) => {
     }
 
     const ticketData = {
+      userId, // Save userId with ticket data
       fullName,
       email,
       subject,
@@ -225,28 +226,26 @@ const Ticket = ({ userId }) => {
               </FormControl>
             </Grid>
             <Grid item xs={12} md={4}>
-              <FormControl fullWidth variant="outlined">
-                <InputLabel shrink>Related Service</InputLabel>
+              <FormControl fullWidth>
+                <InputLabel>Related Service</InputLabel>
                 <Select
                   value={relatedService}
                   onChange={(e) => setRelatedService(e.target.value)}
-                  label="Related Service"
-                  margin="dense"
+                  displayEmpty
                 >
                   <MenuItem value="None">None</MenuItem>
-                  <MenuItem value="Service 1">Service 1</MenuItem>
-                  <MenuItem value="Service 2">Service 2</MenuItem>
+                  <MenuItem value="Service1">Service 1</MenuItem>
+                  <MenuItem value="Service2">Service 2</MenuItem>
+                  <MenuItem value="Service3">Service 3</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
             <Grid item xs={12} md={4}>
-              <FormControl fullWidth variant="outlined">
-                <InputLabel shrink>Priority</InputLabel>
+              <FormControl fullWidth>
+                <InputLabel>Priority</InputLabel>
                 <Select
                   value={priority}
                   onChange={(e) => setPriority(e.target.value)}
-                  label="Priority"
-                  margin="dense"
                 >
                   <MenuItem value="Low">Low</MenuItem>
                   <MenuItem value="Medium">Medium</MenuItem>
@@ -255,90 +254,80 @@ const Ticket = ({ userId }) => {
               </FormControl>
             </Grid>
             <Grid item xs={12}>
-              <Typography variant="subtitle1" gutterBottom>Message</Typography>
-              <ReactQuill
-                value={message}
-                onChange={setMessage}
-                modules={{
-                  toolbar: [
-                    [{ 'header': '1' }, { 'header': '2' }, { 'font': [] }],
-                    [{ size: [] }],
-                    ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-                    [{ 'list': 'ordered' }, { 'list': 'bullet' },
-                    { 'indent': '-1' }, { 'indent': '+1' }],
-                    ['clean']
-                  ],
-                }}
-                formats={[
-                  'header', 'font', 'size',
-                  'bold', 'italic', 'underline', 'strike', 'blockquote',
-                  'list', 'bullet', 'indent',
-                ]}
-                style={{ height: '200px' }}
-              />
-              <Grid container spacing={1} alignItems="center">
-                {attachments.map((file, index) => (
-                  <Grid item key={index}>
+              <Typography variant="body1" sx={{ mb: 1 }}>Message</Typography>
+              <ReactQuill value={message} onChange={setMessage} />
+            </Grid>
+            <Grid item xs={12}>
+              <Box display="flex" alignItems="center" justifyContent="space-between">
+                <label htmlFor="attachments">
+                  <input
+                    id="attachments"
+                    type="file"
+                    multiple
+                    accept="image/jpeg,image/png,video/mp4"
+                    onChange={handleAttachmentChange}
+                    style={{ display: 'none' }}
+                  />
+                  <Button component="span" startIcon={<AttachFileIcon />}>
+                    Add Attachments
+                  </Button>
+                </label>
+                <Box display="flex" flexWrap="wrap">
+                  {attachments.map((file, index) => (
                     <Chip
+                      key={index}
                       label={file.name}
                       onDelete={() => handleRemoveAttachment(index)}
-                      color="primary"
-                      variant="outlined"
+                      sx={{ m: 0.5 }}
                       deleteIcon={<ClearIcon />}
                     />
-                  </Grid>
-                ))}
-              </Grid>
-              <IconButton
-                color="primary"
-                component="label"
-                sx={{ mt: 2 }}
-              >
-                <AttachFileIcon />
-                <input
-                  type="file"
-                  hidden
-                  multiple
-                  onChange={handleAttachmentChange}
-                />
-              </IconButton>
+                  ))}
+                </Box>
+              </Box>
             </Grid>
-            <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-              <Button variant="outlined" onClick={handleCloseForm}>Close</Button>
-              <Button type="submit" variant="contained" color="primary" disabled={loading}>
-                {loading ? <CircularProgress size={24} /> : "Submit"}
-              </Button>
+            <Grid item xs={12} mt={2}>
+              <Box display="flex" justifyContent="space-between">
+                <Button
+                  variant="outlined"
+                  onClick={handleCloseForm}
+                  disabled={loading}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  disabled={loading}
+                >
+                  {loading ? <CircularProgress size={24} /> : "Submit Ticket"}
+                </Button>
+              </Box>
             </Grid>
           </Grid>
         </form>
       )}
-
-      {submittedTickets.length > 0 ? (
-        <Box sx={{ mt: 2 }}>
+      {!ticketOpen && submittedTickets.length > 0 && (
+        <>
           <Typography variant="h4" gutterBottom>Submitted Tickets</Typography>
-          {submittedTickets.map((ticket, index) => (
-            <Box key={index} sx={{ boxShadow: 1, p: 2, borderRadius: 1, mb: 2 }}>
-              <Typography variant="subtitle1">Subject: {ticket.subject}</Typography>
-              <Typography variant="subtitle1">Related Service: {ticket.relatedService}</Typography>
-              <Typography variant="subtitle1">Priority: {ticket.priority}</Typography>
-              <Typography variant="subtitle1">Status: {ticket.status}</Typography>
-              <Typography variant="subtitle1">Ticket ID: {ticket.ticketId}</Typography>
+          {submittedTickets.map((ticket) => (
+            <Box key={ticket.ticketId} mt={2} p={2} border="1px solid #ccc" borderRadius="4px">
+              <Typography variant="h6">Ticket ID: {ticket.ticketId}</Typography>
+              <Typography variant="body1">Subject: {ticket.subject}</Typography>
+              <Typography variant="body1">Department: {ticket.department}</Typography>
+              <Typography variant="body1">Priority: {ticket.priority}</Typography>
+              <Typography variant="body1">Status: {ticket.status}</Typography>
               <Button
                 variant="contained"
                 color="primary"
-                sx={{ mt: 2, backgroundColor: ticket.status === "Open" ? "grey.500" : "primary.main" }}
-                disabled={ticket.status === "Open"}
+                sx={{ mt: 2 }}
                 onClick={() => handleChat(ticket.ticketId)}
               >
-                {ticket.status === "Open" ? "Waiting for support management approval to chat" : "Chat Ticket"}
+                Chat
               </Button>
             </Box>
           ))}
-        </Box>
-      ) : (
-        <Typography variant="subtitle1" sx={{ mt: 2 }}>
-          No tickets have been created.
-        </Typography>
+        </>
       )}
     </Paper>
   );
