@@ -244,21 +244,35 @@ const WebDevDetails = () => {
 
             {currentSection === 'project' && (
             <>
-            <Typography variant="h5" gutterBottom>Project Details</Typography>
-            <Box sx={{ bgcolor: 'background.paper', boxShadow: 1, borderRadius: 1, p: 3 }}>
-              <Typography variant="subtitle1" gutterBottom><strong>Website Name:</strong> {userData.websiteName}</Typography>
-              <Typography variant="subtitle1" gutterBottom><strong>Admin Domain:</strong> {userData.adminDomain}</Typography>
-              <Typography variant="subtitle1" gutterBottom><strong>Domain:</strong> {userData.domain}</Typography>
-              <Typography variant="subtitle1" gutterBottom><strong>Host:</strong> {userData.host}</Typography>
-              <Typography variant="subtitle1" gutterBottom><strong>Project Live:</strong> {userData.projectLive ? 'Yes' : 'No'}</Typography>
-              <Typography variant="subtitle1" gutterBottom><strong>Registration Date:</strong> {userData.registrationDate}</Typography>
-              <Typography variant="subtitle1" gutterBottom><strong>Purpose:</strong> {userData.purpose}</Typography>
-              <Typography variant="subtitle1" gutterBottom><strong>Reference:</strong> {userData.reference}</Typography>
+            <Box 
+              sx={{ 
+                height: isMobileView ? 'calc(100vh - 100px)' : 'auto', // Dynamic height for mobile
+                overflowY: isMobileView ? 'scroll' : 'visible', // Scroll on mobile view
+              }}
+            >
+              <Typography variant="h5" gutterBottom>Project Details</Typography>
+              <Box 
+                  sx={{ 
+                      bgcolor: 'background.paper', 
+                      boxShadow: 1, 
+                      borderRadius: 1, 
+                      p: 3,
+                      minHeight: '100vh' ,
+                      overflow: 'scroll'
+                  }}
+              >
+                  <Typography variant="subtitle1" gutterBottom><strong>Website Name:</strong> {userData.websiteName}</Typography>
+                  <Typography variant="subtitle1" gutterBottom><strong>Admin Domain:</strong> {userData.adminDomain}</Typography>
+                  <Typography variant="subtitle1" gutterBottom><strong>Domain:</strong> {userData.domain}</Typography>
+                  <Typography variant="subtitle1" gutterBottom><strong>Host:</strong> {userData.host}</Typography>
+                  <Typography variant="subtitle1" gutterBottom><strong>Project Live:</strong> {userData.projectLive ? 'Yes' : 'No'}</Typography>
+                  <Typography variant="subtitle1" gutterBottom><strong>Registration Date:</strong> {userData.registrationDate}</Typography>
+                  <Typography variant="subtitle1" gutterBottom><strong>Purpose:</strong> {userData.purpose}</Typography>
+                  <Typography variant="subtitle1" gutterBottom><strong>Reference:</strong> {userData.reference}</Typography>
+              
+                  <ActionButtons domain={userData.domain} adminDomain={userData.adminDomain} />
+              </Box>
             </Box>
-            
-            <ActionButtons domain={userData.domain} adminDomain={userData.adminDomain} />
-            
-          
           </>
             )}
 
