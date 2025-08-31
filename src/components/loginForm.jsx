@@ -65,7 +65,7 @@ const LoginFormPage = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast.success('Login successful!');
-      navigate('/db');
+      navigate('/profile');
     } catch (error) {
       handleFirebaseError(error);
     }
@@ -115,7 +115,7 @@ const LoginFormPage = () => {
   };
 
   if (loggedIn) {
-    navigate('/db', { replace: true });
+    navigate('/profile', { replace: true });
     return null; // Redirecting programmatically, returning null to avoid rendering anything
   }
 

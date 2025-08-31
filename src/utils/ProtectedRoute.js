@@ -36,5 +36,5 @@ export const PublicRoute = ({ element: Component, ...rest }) => {
     return <div>Loading...</div>; // Or some loading indicator
   }
 
-  return isAuthenticated ? <Navigate to="/db" /> : <Component {...rest} />;
+  return isAuthenticated ? <Navigate to="/profile" /> : <Component {...rest} />;
 };

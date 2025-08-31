@@ -10,7 +10,7 @@ const ActionButtons = ({ domain, adminDomain }) => {
     };
 
     const handleEdit = () => {
-        navigate('/db/project-management', { state: { url: adminDomain } });
+        navigate('/profile/project-management', { state: { url: adminDomain } });
     };
 
     return (

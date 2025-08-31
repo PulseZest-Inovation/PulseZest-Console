@@ -17,9 +17,9 @@ function App() {
       <Routes>
         <Route path="/" element={<LoginFormPage />} />
         <Route path="/login" element={<LoginFormPage />} />
-        <Route path="/db" element={<Db />} />
+        <Route path="/profile" element={<Db />} />
         <Route path="/admin-control" element={<AdminControl />} />
-        <Route path="/db/project-management" element={<IframePage />} />
+        <Route path="/profile/project-management" element={<IframePage />} />
 
         <Route path="/employee-support" element={<EmployeeConsole />} />
         <Route path="/ticket/:ticketId" element={<ChatPage />} />
