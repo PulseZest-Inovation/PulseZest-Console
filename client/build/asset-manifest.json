@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/static/css/main.b64cf77e.css",
+    "main.js": "/static/js/main.206e0aff.js",
+    "static/media/bell.wav": "/static/media/bell.261c3a99ab63147907fd.wav",
+    "static/media/2.png": "/static/media/2.37bf0fa4080c147d67bd.png",
+    "static/media/1.png": "/static/media/1.a96bfe8ac6046d90b0e8.png",
+    "static/media/confetti.wav": "/static/media/confetti.7651bbcf418ce4358b50.wav",
+    "index.html": "/index.html"
+  },
+  "entrypoints": [
+    "static/css/main.b64cf77e.css",
+    "static/js/main.206e0aff.js"
+  ]
+}
