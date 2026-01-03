@@ -11,7 +11,7 @@ const HolidayList = ({ holidays }) => {
     date.getFullYear() === today.getFullYear();
 
   return (
-    <Box sx={{ overflowY: 'auto' }}>
+    <Box sx={{ overflowY: 'auto', maxHeight: 500 }}>
       <List>
         {holidays.length === 0 ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 120 }}>
