@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { CircularProgress, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { collection, doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../utils/firebaseConfig';
@@ -55,7 +56,11 @@ const Dashboard = () => {
   }, [navigate]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <CircularProgress color="primary" />
+      </Box>
+    );
   }
 
   if (!userData) {

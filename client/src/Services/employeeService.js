@@ -1,7 +1,40 @@
-import { doc, getDoc, setDoc, serverTimestamp, collection, addDoc, query, where, getDocs } from "firebase/firestore";
+
+import { doc, getDoc, setDoc, serverTimestamp, collection, query, where, getDocs } from "firebase/firestore";
 import { db, auth } from "../utils/firebaseConfig";
-import { signOut } from "firebase/auth";  
+import { signOut } from "firebase/auth";
+import { emailTemplate } from "../emailTemplate";  
+
+export const fetchHolidaysForYear = async (year) => {
+  const holidaysRef = collection(db, "holidays");
+  const querySnapshot = await getDocs(holidaysRef);
+  const holidays = [];
+  querySnapshot.forEach((docSnap) => {
+    // docSnap.id is in yyyy-mm-dd format
+    const [docYear, docMonth, docDay] = docSnap.id.split("-").map(Number);
+    if (docYear === year) {
+      holidays.push({
+        id: docSnap.id,
+        ...docSnap.data(),
+        date: new Date(docYear, docMonth - 1, docDay),
+      });
+    }
+  });
+  // Sort holidays by date ascending
+  holidays.sort((a, b) => a.date - b.date);
+  return holidays;
+};
   
+export const getUsedHolidaysCount = async (userId) => {
+  const attendanceCol = collection(db, "employeeDetails", userId, "attendance");
+  const attendanceSnap = await getDocs(attendanceCol);
+  let holidayCount = 0;
+  attendanceSnap.forEach(doc => {
+    const data = doc.data();
+    if (data.attendance === "holiday") holidayCount++;
+  });
+  return holidayCount;
+};
+
 export const fetchAttendanceData = async (userId) => {
   const today = new Date();
   const formattedDate = `${today.getDate()}-${today.getMonth() + 1}-${today.getFullYear()}`;
@@ -41,29 +74,63 @@ export const markAttendance = async (attendanceStatus) => {
     `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
 
   const todayDate = formatDate(today);
-  const prevDay = new Date(today);
-  prevDay.setDate(today.getDate() - 1);
-  const prevDate = formatDate(prevDay);
-
   const todayRef = doc(db, "employeeDetails", userId, "attendance", todayDate);
-  const prevRef = doc(db, "employeeDetails", userId, "attendance", prevDate);
 
-  const prevSnap = await getDoc(prevRef);
-
-  // 👉 Today attendance
+  // Mark today as present/absent as requested
   await setDoc(todayRef, {
     attendance: attendanceStatus,
     timestamp: serverTimestamp(),
   });
 
-  // 👉 Agar present hai aur kal ka record nahi hai → absent mark karo
-  if (attendanceStatus === "present" && !prevSnap.exists()) {
-    await setDoc(prevRef, {
-      attendance: "absent",
-      timestamp: serverTimestamp(),
-    });
-  }
+  // If marking present, check for missing attendance in the past week (excluding holidays)
+  if (attendanceStatus === "present") {
+    // Get holidays for this year
+    const holidays = await fetchHolidaysForYear(today.getFullYear());
+    console.log("Holidays fetched for attendance check:", holidays);
+    // Convert all holiday doc ids (yyyy-mm-dd) and holiday.date (Date object) to d-m-yyyy for matching
+    const holidayDates = new Set(
+      holidays.flatMap(h => {
+        const [y, m, d] = h.id.split('-').map(Number);
+        const idFormat = `${d}-${m}-${y}`;
+        // Also add from Date object if available
+        let dateFormat = '';
+        if (h.date instanceof Date && !isNaN(h.date)) {
+          dateFormat = `${h.date.getDate()}-${h.date.getMonth() + 1}-${h.date.getFullYear()}`;
+        }
+        return dateFormat && dateFormat !== idFormat ? [idFormat, dateFormat] : [idFormat];
+      })
+    );
 
+    // First, mark all missing holidays in the past week
+    for (let i = 1; i <= 7; i++) {
+      const checkDay = new Date(today);
+      checkDay.setDate(today.getDate() - i);
+      const checkDateStr = formatDate(checkDay); // d-m-yyyy
+      const checkRef = doc(db, "employeeDetails", userId, "attendance", checkDateStr);
+      const checkSnap = await getDoc(checkRef);
+      if (!checkSnap.exists() && holidayDates.has(checkDateStr)) {
+        await setDoc(checkRef, {
+          attendance: "holiday",
+          timestamp: serverTimestamp(),
+        });
+      }
+    }
+    // Then, mark the first missing non-holiday day as absent
+    for (let i = 1; i <= 7; i++) {
+      const checkDay = new Date(today);
+      checkDay.setDate(today.getDate() - i);
+      const checkDateStr = formatDate(checkDay); // d-m-yyyy
+      const checkRef = doc(db, "employeeDetails", userId, "attendance", checkDateStr);
+      const checkSnap = await getDoc(checkRef);
+      if (!checkSnap.exists() && !holidayDates.has(checkDateStr)) {
+        await setDoc(checkRef, {
+          attendance: "absent",
+          timestamp: serverTimestamp(),
+        });
+        break;
+      }
+    }
+  }
 };
 
 export const fetchEmployeeData = async (userId) => {
@@ -102,6 +169,27 @@ export const requestLeave = async (dateRange, reason, userId) => {
   });
 
   await Promise.all(batch);
+
+  const employeeData = await fetchEmployeeData(userId);
+  const email = employeeData.email;
+  const fullName = employeeData.fullName;
+
+  const formattedStartDate = startDate.toLocaleDateString();
+  const formattedEndDate = endDate.toLocaleDateString();
+
+  const message = emailTemplate(fullName, formattedStartDate, formattedEndDate);
+
+  await fetch('https://pulsezest.com/api/send-email', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      to: email,
+      subject: "You have request for a leave",
+      message: message
+    })
+  });
 };
 
 export const logout = async (navigate) => {
@@ -142,30 +230,35 @@ export const getAttendanceStats = async (userId, year) => {
   const attendanceRef = collection(db, "employeeDetails", userId, "attendance");
   const startOfYear = new Date(year, 0, 1);
   const endOfYear = new Date(year, 11, 31);
-  const today = new Date();
-  const endDate = today < endOfYear ? today : endOfYear;
 
   const q = query(attendanceRef, where("timestamp", ">=", startOfYear), where("timestamp", "<=", endOfYear));
   const querySnapshot = await getDocs(q);
 
   let presentCount = 0;
+  let holidayCount = 0;
   let absentCount = 0;
+  let leaveCount = 0;
+  let totalWorkingDays = 0;
 
-  // Calculate total days from start of year to endDate
-  const totalDays = Math.floor((endDate - startOfYear) / (1000 * 60 * 60 * 24)) + 1;
-
-  // Count present
+  // Count all types from attendance collection
   querySnapshot.forEach((doc) => {
     const data = doc.data();
     if (data.attendance === "present") {
       presentCount++;
+      totalWorkingDays++;
+    } else if (data.attendance === "holiday") {
+      holidayCount++;
+    } else if (data.attendance === "absent") {
+      absentCount++;
+      totalWorkingDays++;
+    } else if (data.attendance === "leave") {
+      leaveCount++;
     }
   });
 
-  // Absent is total days minus present (assuming unmarked days are absent)
-  absentCount = totalDays - presentCount;
+  // totalWorkingDays = present + absent (leave aur holiday ko exclude kiya)
 
-  return { present: presentCount, absent: absentCount };
+  return { present: presentCount, absent: absentCount, holiday: holidayCount, leave: leaveCount, totalWorkingDays: totalWorkingDays };
 };
 
 

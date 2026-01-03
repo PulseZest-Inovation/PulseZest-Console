@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { collection, doc, getDoc } from 'firebase/firestore';
@@ -192,7 +193,7 @@ const InternDashboard = () => {
   if (loading) {
     return (
       <div style={styles.loadingScreen}>
-        <p>Loading...</p>
+        <CircularProgress color="primary" />
       </div>
     );
   }

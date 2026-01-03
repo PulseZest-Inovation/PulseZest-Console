@@ -12,7 +12,6 @@ import {
 } from "@mui/material";
 import { Container, Main, Content } from "./styles";
 import {
-  fetchAttendanceData,
   markAttendance,
   fetchEmployeeData,
   logout,
@@ -71,8 +70,10 @@ const EmployeeDashboard = () => {
 
       const unsubscribe = onSnapshot(attendanceDocRef, (docSnap) => {
         if (docSnap.exists()) {
-          setAttendanceData(docSnap.data());
+          const data = docSnap.data();
+          setAttendanceData(data);
           setAttendanceMarked(true);
+          setLastMarkedTime(data.timestamp?.toDate() ?? null);
         } else {
           setAttendanceData({ attendance: "absent" });
           setAttendanceMarked(false);
@@ -96,10 +97,10 @@ const EmployeeDashboard = () => {
   const handleMarkAttendance = async (status) => {
     try {
       const result = await markAttendance(status);
-
+      console.log("your result is here", result );
       setAttendanceData({ attendance: result.attendance });
       setAttendanceMarked(true);
-      setLastMarkedTime(result.markedAt);
+      setLastMarkedTime(result.timestamp);
     } catch (error) {
       console.error(error);
     }

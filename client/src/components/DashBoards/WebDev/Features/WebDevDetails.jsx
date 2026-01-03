@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { CircularProgress } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { collection, doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../../../../utils/firebaseConfig';
@@ -19,7 +20,6 @@ const WebDevDetails = () => {
   const [loading, setLoading] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [currentSection, setCurrentSection] = useState('profile');
-  const { userId } = useParams();
 
 
   const handleDrawerToggle = () => {
@@ -130,7 +130,7 @@ const WebDevDetails = () => {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <Typography>Loading...</Typography>
+        <CircularProgress color="primary" />
       </Box>
     );
   }

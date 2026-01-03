@@ -2,19 +2,14 @@ import React, { useState, useEffect } from "react";
 import {
   Typography,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  List,
-  ListItem,
-  ListItemText,
-  Chip,
 } from "@mui/material";
-import { Section, SectionTitle, MarkButton } from "./styles";
+import { Section } from "./styles";
 import { requestLeave, fetchLeaveRequests, getApprovedLeavesCount, getAttendanceStats } from "../../../Services/employeeService";
 import { auth } from "../../../utils/firebaseConfig";
+import {  getUsedHolidaysCount, fetchHolidaysForYear } from "../../../Services/employeeService";
+import AttendanceMainSection from "./Features/AttendanceMainSection";
+import HolidayList from "./Features/HolidayList";
+
 
 const AttendanceSection = ({
   attendanceData,
@@ -27,27 +22,42 @@ const AttendanceSection = ({
   const [endDate, setEndDate] = useState("");
   const [reason, setReason] = useState("");
   const [leaveRequests, setLeaveRequests] = useState([]);
-  const [approvedLeavesCount, setApprovedLeavesCount] = useState(0);
-  const [attendanceStats, setAttendanceStats] = useState({ present: 0, absent: 0 });
+  const [approvedLeavesCount, setApprovedLeavesCount] = useState(undefined);
+  const [attendanceStats, setAttendanceStats] = useState(undefined);
+  const [holidays, setHolidays] = useState([]);
+  const [usedHolidays, setUsedHolidays] = useState(0);
 
   useEffect(() => {
-    const loadLeaveData = async () => {
+    const loadData = async () => {
       const user = auth.currentUser;
+      const year = new Date().getFullYear();
       if (user) {
         try {
           const requests = await fetchLeaveRequests(user.uid);
           setLeaveRequests(requests);
-          const count = await getApprovedLeavesCount(user.uid, new Date().getFullYear());
+          setApprovedLeavesCount(undefined);
+          setAttendanceStats(undefined);
+          const count = await getApprovedLeavesCount(user.uid, year);
           setApprovedLeavesCount(count);
-          const stats = await getAttendanceStats(user.uid, new Date().getFullYear());
+          const stats = await getAttendanceStats(user.uid, year);
           setAttendanceStats(stats);
+          // Count used holidays from attendance collection (service function)
+          const holidayCount = await getUsedHolidaysCount(user.uid);
+          setUsedHolidays(holidayCount);
         } catch (error) {
           console.error("Error fetching leave data:", error);
         }
       }
+      try {
+        const holidaysList = await fetchHolidaysForYear(year);
+        setHolidays(holidaysList);
+      } catch (error) {
+        console.error("Error fetching holidays:", error);
+      }
     };
-    loadLeaveData();
+    loadData();
   }, []);
+
 
   const handleOpenModal = () => {
     setOpenModal(true);
@@ -86,127 +96,59 @@ const AttendanceSection = ({
 
   return (
     <Section>
-      <SectionTitle>Attendance</SectionTitle>
-      {attendanceData.attendance === "leave" ? (
-        <Typography variant="body1" color="textSecondary">
-          You are on leave today 😄.
-        </Typography>
-      ) : (
-        <>
-          <Typography variant="body1">
-            <strong>Today's Attendance:</strong>{" "}
-            {attendanceData.attendance || "Not marked yet"}
+      <div
+        style={{
+          display: 'flex',
+          gap: 32,
+          alignItems: 'flex-start',
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+        }}
+        className="attendance-section-flex"
+      >
+        {/* Left Side: Attendance, Leave, Summary */}
+        <AttendanceMainSection
+          attendanceData={attendanceData}
+          attendanceMarked={attendanceMarked}
+          lastMarkedTime={lastMarkedTime}
+          handleMarkAttendance={handleMarkAttendance}
+          openModal={openModal}
+          handleOpenModal={handleOpenModal}
+          handleCloseModal={handleCloseModal}
+          startDate={startDate}
+          endDate={endDate}
+          reason={reason}
+          setStartDate={setStartDate}
+          setEndDate={setEndDate}
+          setReason={setReason}
+          handleSubmitLeaveRequest={handleSubmitLeaveRequest}
+          approvedLeavesCount={approvedLeavesCount}
+          attendanceStats={attendanceStats}
+          leaveRequests={leaveRequests}
+        />
+        {/* Right Side: Holiday List */}
+        <div
+          style={{ flex: 1, minWidth: 0, width: '100%', maxWidth: 600, marginTop: 24 }}
+          className="attendance-section-right"
+        >
+          <Typography variant="h6" style={{ marginTop: "0px" }}>
+            Holiday List ({new Date().getFullYear()})
           </Typography>
-          {attendanceMarked && (
-            <Typography variant="body1">
-              <strong>Last Marked Time:</strong>{" "}
-              {lastMarkedTime
-                ? `${lastMarkedTime.toLocaleDateString()} ${lastMarkedTime.toLocaleTimeString()}`
-                : "Not available"}
-            </Typography>
-          )}
-           <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-              {attendanceData.attendance !== "present" && (
-                <MarkButton
-                  variant="contained"
-                  color="primary"
-                  onClick={() => handleMarkAttendance("present")}
-                >
-                  Mark Present
-                </MarkButton>
-              )}
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={handleOpenModal}
-              >
-                Request Leave
-              </Button>
-            </div>
-        </>
-      )}
-
-      <Typography variant="h6" style={{ marginTop: "20px" }}>
-        Leave Summary
-      </Typography>
-      <Typography variant="body1">
-        <strong>Approved Leaves This Year:</strong> {approvedLeavesCount}
-      </Typography>
-
-      <Typography variant="h6" style={{ marginTop: "20px" }}>
-        Attendance Summary This Year
-      </Typography>
-      <Typography variant="body1">
-        <strong>Present Days:</strong> {attendanceStats.present}
-      </Typography>
-      <Typography variant="body1">
-        <strong>Absent Days:</strong> {attendanceStats.absent}
-      </Typography>
-
-      <Typography variant="h6" style={{ marginTop: "20px" }}>
-        Leave Requests
-      </Typography>
-      <div style={{ maxHeight: "200px", overflowY: "auto" }}>
-        <List>
-          {leaveRequests.map((request) => (
-            <ListItem key={request.id}>
-              <ListItemText
-                primary={`${request.date.toDate().toLocaleDateString()}`}
-                secondary={`Reason: ${request.reason}`}
-              />
-              <Chip
-                label={request.status}
-                color={
-                  request.status === "approved"
-                    ? "success"
-                    : request.status === "rejected"
-                    ? "error"
-                    : "default"
-                }
-              />
-            </ListItem>
-          ))}
-        </List>
+          <HolidayList holidays={holidays} />
+        </div>
       </div>
-
-      <Dialog open={openModal} onClose={handleCloseModal} maxWidth="sm" fullWidth>
-        <DialogTitle>Request Leave</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Start Date"
-            type="date"
-            fullWidth
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            margin="normal"
-          />
-          <TextField
-            label="End Date"
-            type="date"
-            fullWidth
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            margin="normal"
-          />
-          <TextField
-            label="Reason for Leave"
-            multiline
-            rows={4}
-            fullWidth
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            margin="normal"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseModal}>Cancel</Button>
-          <Button onClick={handleSubmitLeaveRequest} variant="contained">
-            Submit Request
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <style>{`
+        @media (max-width: 900px) {
+          .attendance-section-flex {
+            flex-direction: column !important;
+            gap: 16px !important;
+          }
+          .attendance-section-left, .attendance-section-right {
+            max-width: 100% !important;
+            width: 100% !important;
+          }
+        }
+      `}</style>
     </Section>
   );
 };

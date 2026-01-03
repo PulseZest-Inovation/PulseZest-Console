@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { CircularProgress, Box } from '@mui/material';
 import { getAuth } from 'firebase/auth';
 import { db } from '../../../../../utils/firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
@@ -156,7 +157,9 @@ const Role = () => {
   return (
     <div style={containerStyle}>
       {loading ? (
-        <p>Loading...</p>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '40vh' }}>
+          <CircularProgress color="primary" />
+        </Box>
       ) : error ? (
         <p>Error: {error}</p>
       ) : (
