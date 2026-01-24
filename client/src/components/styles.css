@@ -3,10 +3,9 @@
 
 /* Common styles for body and html */
 body, html {
-    height: 100%;
     margin: 0;
     font-family: 'Roboto', sans-serif;
-    overflow: hidden;
+    overflow: auto;
 }
 
 /* Adjusted the margin-top value for spacing */

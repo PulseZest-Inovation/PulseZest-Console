@@ -7,6 +7,9 @@ export const Container = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   backgroundColor: theme.palette.background.default,
+  '@media (max-width: 600px)': {
+    paddingBottom: theme.spacing(8), // Space for BottomNav
+  },
 }));
 
 export const Header = styled('header')(({ theme }) => ({

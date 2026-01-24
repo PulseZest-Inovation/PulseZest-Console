@@ -1,4 +1,3 @@
-import React from "react";
 import { Typography, Button } from "@mui/material";
 import { Logout } from "@mui/icons-material";
 import companyLogo from "../../../assets/2.png";
