@@ -126,6 +126,7 @@ const ChatPage = () => {
           timestamp: serverTimestamp(),
           read: false,
         });
+        console.log('File uploaded successfully:', fileUploading);
         setFileUploading(false); // Reset file uploading state
       } else {
         // Store text message in Firestore

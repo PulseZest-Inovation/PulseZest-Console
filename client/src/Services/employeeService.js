@@ -272,8 +272,7 @@ export const getCurrentMonthSalary = async (userId) => {
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth(); // 0-11
 
-    // Get first and last day of current month
-    const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+    // Get last day of current month
     const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
 
     // Total days in current month (all calendar days)
@@ -287,7 +286,7 @@ export const getCurrentMonthSalary = async (userId) => {
 
     querySnapshot.forEach((doc) => {
       const dateStr = doc.id; // Format: d-m-yyyy
-      const [day, month, year] = dateStr.split("-").map(Number);
+      const [, month, year] = dateStr.split("-").map(Number);
       
       // Check if this date is in current month
       if (year === currentYear && month === currentMonth + 1) {

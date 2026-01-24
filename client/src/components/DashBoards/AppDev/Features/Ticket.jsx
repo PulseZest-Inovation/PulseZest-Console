@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { doc, setDoc, getFirestore, collection, getDocs, getDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import {db} from '../../../../utils/firebaseConfig';
@@ -65,14 +65,10 @@ const Ticket = ({ userId }) => {
   // Fetch tickets only when the department changes
   useEffect(() => {
     if (department) {
-      fetchSubmittedTickets();
-    }
-  }, [department]);
+      const fetchSubmittedTickets = async () => {
+        if (!department) return;
 
-  const fetchSubmittedTickets = async (dept) => {
-    if (!dept) return;
-
-    try {
+        try {
       const ticketsCollectionRef = collection(db, 'tickets');
       const snapshot = await getDocs(ticketsCollectionRef);
 
@@ -83,12 +79,15 @@ const Ticket = ({ userId }) => {
       }
 
       const tickets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      const filteredTickets = tickets.filter(ticket => ticket.department === dept && ticket.userId === userId);
+      const filteredTickets = tickets.filter(ticket => ticket.department === department && ticket.userId === userId);
       setSubmittedTickets(filteredTickets);
     } catch (error) {
       console.error('Error fetching tickets:', error);
     }
-  };
+      };
+      fetchSubmittedTickets();
+    }
+  }, [department, userId]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();

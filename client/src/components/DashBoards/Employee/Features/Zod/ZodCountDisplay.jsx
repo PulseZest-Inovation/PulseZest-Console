@@ -4,7 +4,6 @@ import { db } from '../../../../../utils/firebaseConfig';
 import { Typography, CircularProgress, Button, Box } from '@mui/material';
 import Confetti from 'react-dom-confetti';
 import confettiSound from './confetti.wav';  // Make sure to provide the correct path to your sound file
-import { fontSize } from '@mui/system';
 
 const ZodCountDisplay = ({ userId }) => {
   const [zodCount, setZodCount] = useState(null);

@@ -140,13 +140,13 @@ const LoginFormPage = () => {
               <label htmlFor="password" className="active">Password</label>
               <span className="eye-icon" onClick={handleTogglePassword}>{showPassword ? "👁️" : "👁️‍🗨️"}</span>
             </div>
-            <a   id="submit-btn" onClick={handleLogin}>
+            <button type="button" id="submit-btn" onClick={handleLogin}>
               <span></span>
               <span></span>
               <span></span>
               <span></span>
               Submit
-            </a>
+            </button>
             <p className="forgot-password" onClick={handleResetPassword} style={{ color: '#fff', cursor: 'pointer' }}>Forgot your password?</p>
           </form>
         </div>

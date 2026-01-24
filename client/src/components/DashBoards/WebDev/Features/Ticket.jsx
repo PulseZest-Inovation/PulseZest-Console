@@ -5,7 +5,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import ClearIcon from '@mui/icons-material/Clear';
-import { Typography, Paper, Grid, Chip, IconButton, FormControl, InputLabel, TextField, Select, MenuItem, Button, Box, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
+import { Typography, Paper, Grid, Chip, FormControl, InputLabel, TextField, Select, MenuItem, Button, Box, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
 import { db, storage } from '../../../../utils/firebaseConfig'; // Adjust path as per your project structure
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
@@ -54,15 +54,11 @@ const Ticket = ({ userId }) => {
 
   useEffect(() => {
     if (department) {
-      fetchSubmittedTickets(department);
-    }
-  }, [department]);
+      const fetchSubmittedTickets = async () => {
+        if (!department) return;
 
-  const fetchSubmittedTickets = async (dept) => {
-    if (!dept) return;
-
-    try {
-      const ticketsCollectionRef = collection(db, 'tickets');
+        try {
+          const ticketsCollectionRef = collection(db, 'tickets');
       const snapshot = await getDocs(ticketsCollectionRef);
 
       if (snapshot.empty) {
@@ -72,12 +68,15 @@ const Ticket = ({ userId }) => {
       }
 
       const tickets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      const filteredTickets = tickets.filter(ticket => ticket.department === dept && ticket.userId === userId);
+      const filteredTickets = tickets.filter(ticket => ticket.department === department && ticket.userId === userId);
       setSubmittedTickets(filteredTickets);
     } catch (error) {
       console.error('Error fetching tickets:', error);
     }
-  };
+        };
+        fetchSubmittedTickets();
+    }
+  }, [department, userId]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();

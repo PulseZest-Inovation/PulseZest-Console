@@ -37,6 +37,7 @@ const IframePage = () => {
                     width="100%"
                     height="100%"
                     frameBorder="0"
+                    title="Iframe Content"
                     style={{ border: 'none' }}
                     allow="microphone; camera"
                 />

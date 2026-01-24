@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate,useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { collection, doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../../../utils/firebaseConfig';
@@ -13,7 +13,6 @@ const AppDevDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [currentSection, setCurrentSection] = useState('profile');
-  const { userId } = useParams();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);

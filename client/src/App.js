@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LoginFormPage from './pages/loginFormPage';
 import Db from './pages/dbPage';
@@ -8,7 +7,6 @@ import ChatPage from './pages/ChatPage'; // Import the ChatPage component
 import IframePage from './pages/iframe'; // Adjust path as necessary
 
 function App() {
-  const [currentUser, setCurrentUser] = useState(null);
 
  
 

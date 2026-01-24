@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from "react";
 import {
   Typography,
-  Button,
 } from "@mui/material";
 import { Section } from "./styles";
 import { requestLeave, fetchLeaveRequests, getApprovedLeavesCount, getAttendanceStats } from "../../../Services/employeeService";
 import { auth } from "../../../utils/firebaseConfig";
-import {  getUsedHolidaysCount, fetchHolidaysForYear } from "../../../Services/employeeService";
+import {  fetchHolidaysForYear } from "../../../Services/employeeService";
 import AttendanceMainSection from "./Features/AttendanceMainSection";
 import HolidayList from "./Features/HolidayList";
-import SalarySection from "./Features/SalarySection";
 
 
 const AttendanceSection = ({
@@ -26,7 +24,6 @@ const AttendanceSection = ({
   const [approvedLeavesCount, setApprovedLeavesCount] = useState(undefined);
   const [attendanceStats, setAttendanceStats] = useState(undefined);
   const [holidays, setHolidays] = useState([]);
-  const [usedHolidays, setUsedHolidays] = useState(0);
 
   useEffect(() => {
     const loadData = async () => {
@@ -42,9 +39,6 @@ const AttendanceSection = ({
           setApprovedLeavesCount(count);
           const stats = await getAttendanceStats(user.uid, year);
           setAttendanceStats(stats);
-          // Count used holidays from attendance collection (service function)
-          const holidayCount = await getUsedHolidaysCount(user.uid);
-          setUsedHolidays(holidayCount);
         } catch (error) {
           console.error("Error fetching leave data:", error);
         }

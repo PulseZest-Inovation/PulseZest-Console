@@ -1,7 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { signOut } from 'firebase/auth';
-import { doc, writeBatch, collection, onSnapshot, updateDoc, getDocs } from 'firebase/firestore';
+import { doc, writeBatch, collection, onSnapshot, getDocs } from 'firebase/firestore';
 import { auth, db } from '../../../../../utils/firebaseConfig';
 import {
   IconButton, Typography, Badge, Menu, MenuItem, Avatar, Box, List, ListItem, ListItemAvatar, ListItemText, Divider
@@ -10,7 +8,6 @@ import { Notifications } from '@mui/icons-material';
 import bellSound from '../Notifications/bell.wav'; // Import the sound file correctly
 
 const Notification = () => {
-  const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [unseenCount, setUnseenCount] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -94,14 +91,6 @@ const Notification = () => {
     return () => document.removeEventListener('click', unlockSound);
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      navigate('/login', { replace: true });
-    } catch (error) {
-      console.error('Error logging out:', error);
-    }
-  };
 
   const handleOpenNotifications = async (event) => {
     setAnchorEl(event.currentTarget);
