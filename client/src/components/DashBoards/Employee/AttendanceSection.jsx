@@ -9,6 +9,7 @@ import { auth } from "../../../utils/firebaseConfig";
 import {  getUsedHolidaysCount, fetchHolidaysForYear } from "../../../Services/employeeService";
 import AttendanceMainSection from "./Features/AttendanceMainSection";
 import HolidayList from "./Features/HolidayList";
+import SalarySection from "./Features/SalarySection";
 
 
 const AttendanceSection = ({
@@ -96,6 +97,7 @@ const AttendanceSection = ({
 
   return (
     <Section>
+    
       <div
         style={{
           display: 'flex',

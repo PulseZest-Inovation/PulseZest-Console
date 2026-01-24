@@ -7,6 +7,7 @@ import { SectionTitle, MarkButton } from "../styles";
 import LeaveRequestModal from "./LeaveRequestModal";
 import AttendanceSummary from "./AttendanceSummary";
 import LeaveRequestsList from "./LeaveRequestsList";
+import SalarySection from "./SalarySection";
 
 const AttendanceMainSection = ({
   attendanceData,
@@ -98,7 +99,7 @@ const AttendanceMainSection = ({
         Leave Requests
       </Typography>
       <LeaveRequestsList leaveRequests={leaveRequests} />
-
+      <SalarySection />
       <LeaveRequestModal
         open={openModal}
         onClose={handleCloseModal}

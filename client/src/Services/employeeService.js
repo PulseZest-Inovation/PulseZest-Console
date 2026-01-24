@@ -261,4 +261,58 @@ export const getAttendanceStats = async (userId, year) => {
   return { present: presentCount, absent: absentCount, holiday: holidayCount, leave: leaveCount, totalWorkingDays: totalWorkingDays };
 };
 
+export const getCurrentMonthSalary = async (userId) => {
+  try {
+    // Fetch employee salary
+    const employeeData = await fetchEmployeeData(userId);
+    const monthlySalary = employeeData.salary || 0;
+
+    // Get current month and year
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth(); // 0-11
+
+    // Get first and last day of current month
+    const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+    const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
+
+    // Total days in current month (all calendar days)
+    const totalDaysInMonth = lastDayOfMonth.getDate();
+
+    // Get attendance for current month
+    const attendanceRef = collection(db, "employeeDetails", userId, "attendance");
+    const querySnapshot = await getDocs(attendanceRef);
+
+    let presentDays = 0;
+
+    querySnapshot.forEach((doc) => {
+      const dateStr = doc.id; // Format: d-m-yyyy
+      const [day, month, year] = dateStr.split("-").map(Number);
+      
+      // Check if this date is in current month
+      if (year === currentYear && month === currentMonth + 1) {
+        const data = doc.data();
+        if (data.attendance === "present") {
+          presentDays++;
+        }
+      }
+    });
+
+    // Calculate salary for current month
+    const dailyRate = monthlySalary / totalDaysInMonth;
+    const currentMonthSalary = Math.round(dailyRate * presentDays * 100) / 100;
+
+    return {
+      monthlySalary,
+      totalDaysInMonth,
+      presentDays,
+      dailyRate: Math.round(dailyRate * 100) / 100,
+      currentMonthSalary,
+    };
+  } catch (error) {
+    console.error("Error calculating current month salary:", error);
+    throw error;
+  }
+};
+
 
