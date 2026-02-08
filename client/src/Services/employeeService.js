@@ -1,5 +1,5 @@
 
-import { doc, getDoc, setDoc, serverTimestamp, collection, query, where, getDocs } from "firebase/firestore";
+import { doc, getDoc, setDoc, serverTimestamp, collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { db, auth } from "../utils/firebaseConfig";
 import { signOut } from "firebase/auth";
 import { emailTemplate } from "../emailTemplate";  
@@ -314,4 +314,32 @@ export const getCurrentMonthSalary = async (userId) => {
   }
 };
 
+export const fetchEmployeePaySlips = async (userId) => {
+  try {
+    const paySlipRef = collection(
+      db,
+      "employeeDetails",
+      userId,
+      "paySlip"
+    );
+
+    // latest payslip first
+    const q = query(paySlipRef, orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+
+    const paySlips = [];
+
+    snapshot.forEach((doc) => {
+      paySlips.push({
+        id: doc.id, // month-year
+        ...doc.data(),
+      });
+    });
+
+    return paySlips;
+  } catch (error) {
+    console.error("Error fetching payslips:", error);
+    throw error;
+  }
+};
 

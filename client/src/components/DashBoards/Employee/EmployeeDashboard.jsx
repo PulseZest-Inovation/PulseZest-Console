@@ -16,7 +16,6 @@ import {
   fetchEmployeeData,
   logout,
 } from "../../../Services/employeeService";
-import ProfileSection from "./ProfileSection";
 import WorkingDepartmentSection from "./WorkingDepartmentSection";
 import DocumentsSection from "./DocumentsSection";
 import BankSection from "./BankSection";
@@ -24,6 +23,7 @@ import AttendanceSection from "./AttendanceSection";
 import HeaderComponent from "./HeaderComponent";
 import SidebarComponent from "./SidebarComponent";
 import BottomNavComponent from "./BottomNavComponent";
+import EmployeeTabs from "./EmployeTabs";
 
 const EmployeeDashboard = () => {
   const navigate = useNavigate();
@@ -132,7 +132,7 @@ const EmployeeDashboard = () => {
   const ContentSection = () => {
     switch (currentSection) {
       case "profile":
-        return <ProfileSection userData={userData} />;
+        return <EmployeeTabs userData={userData} />;
       case "workingDepartment":
         return (
           <WorkingDepartmentSection
