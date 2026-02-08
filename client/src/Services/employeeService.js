@@ -287,11 +287,11 @@ export const getCurrentMonthSalary = async (userId) => {
     querySnapshot.forEach((doc) => {
       const dateStr = doc.id; // Format: d-m-yyyy
       const [, month, year] = dateStr.split("-").map(Number);
-      
+      const countDays = ['present', 'absent', 'leave'];
       // Check if this date is in current month
       if (year === currentYear && month === currentMonth + 1) {
         const data = doc.data();
-        if (data.attendance === "present") {
+        if (countDays.includes(data.attendance)) {
           presentDays++;
         }
       }
