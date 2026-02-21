@@ -5,6 +5,7 @@ import AdminControl from './components/DashBoards/AdminControls/adminControl';
 import EmployeeConsole from './components/DashBoards/Employee/Features/Console/EmployeeConsole';
 import ChatPage from './pages/ChatPage'; // Import the ChatPage component
 import IframePage from './pages/iframe'; // Adjust path as necessary
+import PrivacyPolicy from './pages/privacy-policy';
 
 function App() {
 
@@ -15,6 +16,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LoginFormPage />} />
         <Route path="/login" element={<LoginFormPage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/profile" element={<Db />} />
         <Route path="/admin-control" element={<AdminControl />} />
         <Route path="/profile/project-management" element={<IframePage />} />
